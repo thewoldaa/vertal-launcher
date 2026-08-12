@@ -1,0 +1,72 @@
+/* Obsidian Deep design tokens — ported 1:1 from the Stitch DESIGN.md spec. */
+:root {
+  /* Surfaces */
+  --surface: #131315;
+  --surface-dim: #131315;
+  --surface-bright: #39393b;
+  --surface-container-lowest: #0e0e10;
+  --surface-container-low: #1b1b1d;
+  --surface-container: #201f21;
+  --surface-container-high: #2a2a2c;
+  --surface-container-highest: #353437;
+  --surface-variant: #353437;
+
+  --on-surface: #e5e1e4;
+  --on-surface-variant: #b9ccb2;
+  --outline: #84967e;
+  --outline-variant: #3b4b37;
+  --background: #131315;
+  --on-background: #e5e1e4;
+
+  /* Primary — Lush Green, reserved for Play / success states */
+  --primary: #ebffe2;
+  --on-primary: #003907;
+  --primary-container: #00ff41;
+  --on-primary-container: #007117;
+  --primary-fixed: #72ff70;
+  --primary-fixed-dim: #00e639;
+
+  /* Secondary — Lavender, Fabric/Quilt accent */
+  --secondary: #ddb7ff;
+  --on-secondary: #490080;
+  --secondary-container: #6f00be;
+  --on-secondary-container: #d6a9ff;
+  --secondary-fixed: #f0dbff;
+  --secondary-fixed-dim: #ddb7ff;
+
+  /* Tertiary — Amber, Forge/Snapshot accent */
+  --tertiary: #fff8f4;
+  --on-tertiary: #472a00;
+  --tertiary-container: #ffd6a8;
+  --on-tertiary-container: #895600;
+  --tertiary-fixed: #ffddb8;
+  --tertiary-fixed-dim: #ffb95f;
+
+  /* NeoForge / update accent (cyan) */
+  --update-accent: #4dd8e8;
+
+  /* Error */
+  --error: #ffb4ab;
+  --on-error: #690005;
+  --error-container: #93000a;
+  --on-error-container: #ffdad6;
+
+  /* Typography */
+  --font-display: 'Space Grotesk', 'Segoe UI', sans-serif;
+  --font-body: 'Inter', 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Consolas', monospace;
+
+  /* Radii */
+  --radius-sm: 0.25rem;
+  --radius: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-full: 9999px;
+
+  /* Layout */
+  --sidebar-width: 248px;
+  --titlebar-height: 34px;
+  --container-padding: 28px;
+  --gutter: 18px;
+}

@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: file:; style-src 'self' 'unsafe-inline'; font-src 'self'; script-src 'self';">
+<title>Vertal Launcher</title>
+<link rel="icon" href="assets/icon-64.png" />
+<link rel="stylesheet" href="css/fonts.css" />
+<link rel="stylesheet" href="css/tokens.css" />
+<link rel="stylesheet" href="css/base.css" />
+<link rel="stylesheet" href="css/titlebar.css" />
+<link rel="stylesheet" href="css/layout.css" />
+<link rel="stylesheet" href="css/screens.css" />
+</head>
+<body>
+
+<div id="app-root" class="glass-1">
+
+  <!-- ============ Custom Titlebar ============ -->
+  <div id="titlebar">
+    <div class="tb-brand"><img src="assets/icon-64.png" alt="" />Vertal Launcher</div>
+    <div class="tb-controls">
+      <button class="tb-btn" id="tb-minimize"><span class="material-symbols-outlined">remove</span></button>
+      <button class="tb-btn" id="tb-maximize"><span class="material-symbols-outlined">crop_square</span></button>
+      <button class="tb-btn tb-close" id="tb-close"><span class="material-symbols-outlined">close</span></button>
+    </div>
+  </div>
+
+  <div id="app-body">
+    <div id="bg-layer"></div>
+
+    <!-- ============ Sidebar ============ -->
+    <aside id="sidebar">
+      <div class="brand">
+        <img src="assets/icon-64.png" alt="Vertal" />
+        <div>
+          <h1>Vertal</h1>
+          <p>OFFLINE LAUNCHER</p>
+        </div>
+      </div>
+
+      <nav>
+        <div class="nav-item" data-view="home"><span class="material-symbols-outlined">home</span>Home</div>
+        <div class="nav-item" data-view="versions"><span class="material-symbols-outlined">layers</span>Versions</div>
+        <div class="nav-item" data-view="servers"><span class="material-symbols-outlined">dns</span>Servers</div>
+        <div class="nav-item" data-view="mods"><span class="material-symbols-outlined">extension</span>Mods</div>
+        <div class="nav-item" data-view="settings"><span class="material-symbols-outlined">settings</span>Settings</div>
+      </nav>
+
+      <div class="sidebar-cta">
+        <button class="btn btn-secondary" id="sidebar-add-btn" style="width:100%">
+          <span class="material-symbols-outlined" style="font-size:17px">add</span>New Installation
+        </button>
+      </div>
+
+      <div class="row" id="sidebar-footer" style="gap:10px; padding:16px 20px 0; margin-top:14px; border-top:1px solid rgba(132,150,126,0.1); padding-top:16px;"></div>
+    </aside>
+
+    <!-- ============ Main column ============ -->
+    <div class="col grow" style="min-width:0;">
+      <div id="topbar">
+        <div class="crumb"><h2 id="topbar-crumb">Dashboard</h2></div>
+        <div class="actions">
+          <div class="search-box">
+            <span class="material-symbols-outlined">search</span>
+            <input type="text" id="topbar-search" placeholder="Search installations…" />
+          </div>
+        </div>
+      </div>
+
+      <div id="content">
+
+        <!-- ============ HOME ============ -->
+        <section class="view" id="view-home">
+          <div class="home-grid">
+            <div class="col" style="gap: var(--gutter)">
+              <div class="hero panel" id="hero"></div>
+              <div class="stat-row">
+                <div class="stat-card glass-2 panel">
+                  <span class="material-symbols-outlined">memory</span>
+                  <div><div class="label">Allocated RAM</div><div class="stat-val" id="stat-ram">—</div></div>
+                </div>
+                <div class="stat-card glass-2 panel">
+                  <span class="material-symbols-outlined">schedule</span>
+                  <div><div class="label">Total Playtime</div><div class="stat-val" id="stat-playtime">—</div></div>
+                </div>
+                <div class="stat-card glass-2 panel">
+                  <span class="material-symbols-outlined">layers</span>
+                  <div><div class="label">Installations</div><div class="stat-val" id="stat-installs">—</div></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="side-col">
+              <div class="profile-card glass-2 panel" id="home-profile-card"></div>
+              <div class="news-card glass-2 panel">
+                <div class="news-head"><h3 style="font-size:14px">Recent Activity</h3><span class="material-symbols-outlined text-dim" style="font-size:18px">history</span></div>
+                <div class="news-list" id="activity-list"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============ VERSIONS ============ -->
+        <section class="view" id="view-versions">
+          <div class="view-header">
+            <h2>Installations</h2>
+            <p>Every Minecraft version and modloader combo you've set up lives here.</p>
+          </div>
+          <div class="filter-bar glass-2 panel" id="versions-filters">
+            <div class="chip-row">
+              <span class="chip active" data-filter="all">All</span>
+              <span class="chip" data-filter="installed">Installed</span>
+              <span class="chip" data-filter="vanilla">Vanilla</span>
+              <span class="chip" data-filter="modded">Modded</span>
+            </div>
+          </div>
+          <div class="version-grid" id="version-grid"></div>
+        </section>
+
+        <!-- ============ SERVERS ============ -->
+        <section class="view" id="view-servers">
+          <div class="view-header">
+            <h2>Servers</h2>
+            <p>Save servers and jump straight in — offline profile, no account needed, on offline-mode servers.</p>
+          </div>
+          <div class="servers-toolbar">
+            <div class="chip" id="servers-instance-chip" style="background:var(--surface-container-high);color:var(--on-surface-variant);font-size:11px">Launching with: —</div>
+            <button class="btn btn-primary" id="servers-add-btn"><span class="material-symbols-outlined" style="font-size:16px">add</span>Add Server</button>
+          </div>
+          <div class="servers-grid" id="servers-grid"></div>
+        </section>
+
+        <!-- ============ MODS ============ -->
+        <section class="view" id="view-mods">
+          <div class="view-header">
+            <h2>Mods</h2>
+            <p>Manage mod jars for a Fabric, Quilt, Forge or NeoForge installation.</p>
+          </div>
+          <div class="mods-toolbar">
+            <select class="input instance-select" id="mods-instance-select"></select>
+            <div class="row" style="gap:10px">
+              <button class="btn btn-secondary" id="mods-open-folder-btn"><span class="material-symbols-outlined" style="font-size:16px">folder_open</span>Open Folder</button>
+              <button class="btn btn-primary" id="mods-add-btn"><span class="material-symbols-outlined" style="font-size:16px">add</span>Add Mods</button>
+            </div>
+          </div>
+          <div class="glass-2 panel" id="mods-vanilla-notice" style="padding:12px 16px;margin-bottom:16px;font-size:12.5px;color:var(--on-surface-variant);display:flex;gap:10px;align-items:center">
+            <span class="material-symbols-outlined" style="font-size:18px;color:var(--tertiary-fixed-dim)">info</span>
+            Vanilla installations can't load mod jars — create a Fabric, Quilt, Forge or NeoForge installation to actually use these.
+          </div>
+          <div class="mods-list" id="mods-list"></div>
+        </section>
+
+        <!-- ============ SETTINGS ============ -->
+        <section class="view" id="view-settings">
+          <div class="view-header">
+            <h2>Settings</h2>
+            <p>Offline profiles, Java, memory and appearance.</p>
+          </div>
+          <div class="settings-grid">
+
+            <div class="settings-card glass-2 panel col-6" style="grid-column:span 6">
+              <div class="sc-head"><div class="sc-icon"><span class="material-symbols-outlined" style="font-size:18px">badge</span></div><h3>Offline Profiles</h3></div>
+              <div class="profile-add-row">
+                <input class="input" id="settings-new-username" placeholder="Username (3–16 characters)" />
+                <button class="btn btn-primary" id="settings-add-account-btn">Add</button>
+              </div>
+              <div class="account-list" id="settings-accounts"></div>
+            </div>
+
+            <div class="settings-card glass-2 panel" style="grid-column:span 6">
+              <div class="sc-head"><div class="sc-icon"><span class="material-symbols-outlined" style="font-size:18px">palette</span></div><h3>Appearance</h3></div>
+              <div class="theme-grid">
+                <div class="theme-opt swatch-dark selected" data-theme="dark"><div class="swatch"></div>Dark</div>
+                <div class="theme-opt swatch-light" data-theme="light"><div class="swatch"></div>Light</div>
+                <div class="theme-opt swatch-system" data-theme="system"><div class="swatch"></div>System</div>
+              </div>
+            </div>
+
+            <div class="settings-card glass-2 panel" style="grid-column:span 12">
+              <div class="sc-head"><div class="sc-icon"><span class="material-symbols-outlined" style="font-size:18px">memory</span></div><h3>Memory Allocation</h3></div>
+              <div class="ram-head">
+                <span class="text-dim" style="font-size:12.5px">How much RAM Minecraft is allowed to use</span>
+                <span class="ram-readout" id="settings-ram-readout"></span>
+              </div>
+              <input type="range" class="ram-slider" id="settings-ram-slider" />
+              <div class="ram-scale"><span>1 GB</span><span id="settings-ram-max-label">16 GB</span></div>
+            </div>
+
+            <div class="settings-card glass-2 panel" style="grid-column:span 12">
+              <div class="sc-head"><div class="sc-icon"><span class="material-symbols-outlined" style="font-size:18px">terminal</span></div><h3>Java & Environment</h3></div>
+              <div class="field-group" style="margin-bottom:16px">
+                <label class="field-label">Java Executable Path</label>
+                <div class="path-field-row">
+                  <div class="grow"><input class="input" id="settings-java-path" readonly /></div>
+                  <button class="btn btn-secondary" id="settings-browse-java">Browse</button>
+                  <button class="btn btn-ghost" id="settings-clear-java" title="Reset to auto-detect"><span class="material-symbols-outlined" style="font-size:18px">restart_alt</span></button>
+                </div>
+              </div>
+              <div class="field-group" style="margin-bottom:16px">
+                <label class="field-label">Extra JVM Arguments</label>
+                <input class="input mono" id="settings-jvm-args" placeholder="e.g. -XX:+UseG1GC" />
+              </div>
+              <button class="btn btn-secondary" id="settings-open-data-folder"><span class="material-symbols-outlined" style="font-size:16px">folder_open</span>Open Data Folder</button>
+            </div>
+
+            <div class="settings-card glass-2 panel" style="grid-column:span 12">
+              <div class="sc-head"><div class="sc-icon"><span class="material-symbols-outlined" style="font-size:18px">monitor</span></div><h3>Display & Launch</h3></div>
+              <div class="field-group" style="margin-bottom:16px">
+                <div class="row" style="justify-content:space-between;align-items:center">
+                  <label class="field-label" style="margin:0">Fullscreen</label>
+                  <label class="toggle-row" style="margin:0">
+                    <input type="checkbox" class="checkbox" id="settings-fullscreen-checkbox" />
+                    Launch the game in fullscreen
+                  </label>
+                </div>
+              </div>
+              <div class="field-row-2" style="margin-bottom:16px">
+                <div class="field-group">
+                  <label class="field-label">Window Width (px)</label>
+                  <input type="number" class="input mono" id="settings-res-width" min="0" step="1" placeholder="0 = default" />
+                </div>
+                <div class="field-group">
+                  <label class="field-label">Window Height (px)</label>
+                  <input type="number" class="input mono" id="settings-res-height" min="0" step="1" placeholder="0 = default" />
+                </div>
+              </div>
+              <div class="row" style="justify-content:space-between;align-items:center">
+                <label class="field-label" style="margin:0">Close launcher when the game starts</label>
+                <label class="toggle-row" style="margin:0">
+                  <input type="checkbox" class="checkbox" id="settings-close-on-launch" />
+                  Auto-close Vertal after Play
+                </label>
+              </div>
+            </div>
+
+          </div>
+          <div class="settings-footer">
+            <button class="btn btn-primary" id="settings-save-btn">Save Changes</button>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ FIRST-RUN WIZARD ============ -->
+<div id="screen-wizard" class="glass-1 hidden">
+  <div class="wizard-shell glass-2">
+    <nav class="wizard-nav glass-1">
+      <div class="wz-brand">
+        <img src="assets/icon-128.png" alt="" />
+        <h1>Vertal</h1>
+        <p>OFFLINE LAUNCHER</p>
+      </div>
+      <ul>
+        <li class="wz-step" data-step="language"><span class="material-symbols-outlined">language</span>Language</li>
+        <li class="wz-step" data-step="license"><span class="material-symbols-outlined">gavel</span>License</li>
+        <li class="wz-step" data-step="profile"><span class="material-symbols-outlined">person_add</span>Profile</li>
+        <li class="wz-step" data-step="path"><span class="material-symbols-outlined">folder_open</span>Storage</li>
+        <li class="wz-step" data-step="install"><span class="material-symbols-outlined">download_done</span>Install</li>
+      </ul>
+    </nav>
+
+    <div class="wizard-body">
+      <div class="wizard-content">
+
+        <div class="wz-panel hidden" id="wz-panel-language">
+          <h2>Choose your language</h2>
+          <p class="wz-sub">You can change this later in Settings.</p>
+          <div class="lang-grid">
+            <div class="lang-card selected" data-lang="en">
+              <span class="flag-emoji">🇬🇧</span>
+              <span class="check material-symbols-outlined">check_circle</span>
+              <h3>English</h3><p>EN-US</p>
+            </div>
+            <div class="lang-card" data-lang="id">
+              <span class="flag-emoji">🇮🇩</span>
+              <span class="check material-symbols-outlined">check_circle</span>
+              <h3>Bahasa Indonesia</h3><p>ID</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="wz-panel hidden" id="wz-panel-license">
+          <h2>Before we begin</h2>
+          <p class="wz-sub">Vertal Launcher is an independent, unofficial tool. Please read this first.</p>
+          <div class="eula-box">
+            <div class="eula-head">VERTAL LAUNCHER — TERMS OF USE</div>
+            <div class="eula-text">
+              <h4>1. Unofficial software</h4>
+              <p>Vertal Launcher is a fan-made, third-party launcher built by CraftKal. It is not produced, endorsed, or affiliated with Mojang Studios, Microsoft, or any of their subsidiaries. "Minecraft" is a trademark of Mojang Synergies AB.</p>
+              <h4>2. What this launcher does</h4>
+              <p>Vertal downloads the same publicly-served game, library and asset files the official Minecraft Launcher uses, directly from Mojang's own servers, and starts the game locally using an offline profile — a username-only identity with no Microsoft/Mojang account sign-in, intended for singleplayer, LAN and offline-mode play.</p>
+              <h4>3. Your responsibility</h4>
+              <p>You are responsible for using Minecraft in accordance with Mojang's End User License Agreement, available at minecraft.net/en-us/eula. This launcher does not remove, bypass or circumvent any purchase requirement, license check or copy protection.</p>
+              <h4>4. No warranty</h4>
+              <p>This software is provided "as is", without warranty of any kind. Downloads depend on third-party services (Mojang, Fabric, Forge, NeoForge) that CraftKal does not control or operate.</p>
+            </div>
+          </div>
+          <div class="agree-row" id="wz-agree-row">
+            <input type="checkbox" class="checkbox" id="wz-agree-checkbox" />
+            <span>I have read and agree to these terms and to Mojang's Minecraft EULA.</span>
+          </div>
+        </div>
+
+        <div class="wz-panel hidden" id="wz-panel-profile">
+          <h2>Create your profile</h2>
+          <p class="wz-sub">This is a local, offline identity — no email or password needed. It's how the game and your saves recognize you.</p>
+          <div class="profile-add-row">
+            <input class="input" id="wz-username-input" placeholder="Choose a username" />
+            <button class="btn btn-primary" id="wz-add-account-btn">Add Profile</button>
+          </div>
+          <div class="account-list" id="wz-account-list"></div>
+        </div>
+
+        <div class="wz-panel hidden" id="wz-panel-path">
+          <h2>Where should files live?</h2>
+          <p class="wz-sub">Minecraft versions, libraries and assets will be stored here. Pick a drive with enough free space.</p>
+          <div class="path-row">
+            <div class="grow field-group">
+              <label class="field-label">Data Folder</label>
+              <input class="input mono" id="wz-path-display" readonly />
+            </div>
+            <button class="btn btn-secondary" id="wz-browse-path-btn">Browse…</button>
+          </div>
+          <div class="space-stats">
+            <div class="space-stat"><span class="material-symbols-outlined">hard_drive</span><div class="label">Free Space</div><div class="val" id="wz-space-free">—</div></div>
+            <div class="space-stat"><span class="material-symbols-outlined">info</span><div class="label">Note</div><div style="font-size:12.5px;color:var(--on-surface-variant);margin-top:6px" id="wz-space-note"></div></div>
+          </div>
+        </div>
+
+        <div class="wz-panel hidden" id="wz-panel-install">
+          <div class="install-overlay" style="position:static;padding:20px 0">
+            <div class="io-icon" id="wz-install-icon"><span class="material-symbols-outlined">downloading</span></div>
+            <h1>Setting up Vertal</h1>
+            <div class="io-pct" id="wz-install-pct"></div>
+            <div class="io-track"><div class="progress-track"><div class="progress-fill" id="wz-install-fill" style="width:10%"></div></div></div>
+            <div class="io-file" id="wz-install-phase"></div>
+            <div class="io-error" id="wz-install-error" style="display:none"></div>
+            <button class="btn btn-primary hidden" id="wz-enter-app-btn" style="margin-top:26px">
+              <span class="material-symbols-outlined" style="font-size:17px">rocket_launch</span>Enter Vertal Launcher
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="wizard-footer" id="wizard-footer">
+        <button class="btn btn-ghost" id="wizard-back-btn">Back</button>
+        <button class="btn btn-primary" id="wizard-next-btn">Next</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ CREATE INSTALLATION MODAL ============ -->
+<div class="modal-overlay hidden" id="instance-modal-overlay">
+  <div class="modal-card fade-in">
+    <div class="modal-head">
+      <h3 id="modal-title">New Installation</h3>
+      <button class="btn-icon" id="modal-close-btn"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <div class="modal-body">
+      <div class="field-group" id="modal-static-info" style="display:none">
+        <label class="field-label">Installation Info</label>
+        <div id="modal-static-chips" class="row" style="gap:8px;flex-wrap:wrap"></div>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Installation Name</label>
+        <input class="input" id="modal-name" placeholder="e.g. My Modded World" />
+      </div>
+
+      <div class="field-row-2" id="modal-picker">
+        <div class="field-group">
+          <div class="row" style="justify-content:space-between">
+            <label class="field-label">Minecraft Version</label>
+            <span class="chip" id="chip-show-snapshots" style="font-size:9.5px;padding:3px 10px">Snapshots</span>
+          </div>
+          <select class="input" id="modal-mc-version"></select>
+        </div>
+        <div class="field-group" id="modal-loader-version-wrap">
+          <label class="field-label">Loader Version</label>
+          <select class="input" id="modal-loader-version"></select>
+        </div>
+      </div>
+
+      <div class="field-group" id="modal-loader-picker">
+        <label class="field-label">Modloader</label>
+        <div class="loader-grid">
+          <div class="loader-opt selected" data-loader="vanilla">Vanilla</div>
+          <div class="loader-opt" data-loader="fabric">Fabric</div>
+          <div class="loader-opt" data-loader="quilt">Quilt</div>
+          <div class="loader-opt" data-loader="forge">Forge</div>
+          <div class="loader-opt" data-loader="neoforge">NeoForge</div>
+        </div>
+      </div>
+
+      <label class="toggle-row">
+        <input type="checkbox" class="checkbox" id="modal-separate-folder" />
+        Use a separate saves/mods folder for this installation
+      </label>
+
+      <details class="adv-details" id="modal-advanced">
+        <summary><span class="material-symbols-outlined" style="font-size:15px">tune</span>Advanced — RAM & JVM arguments</summary>
+        <div class="adv-body">
+          <div class="field-group" style="margin-bottom:14px">
+            <div class="ram-head">
+              <label class="field-label" style="margin:0">Memory for this installation</label>
+              <span class="ram-readout" id="modal-ram-readout"></span>
+            </div>
+            <input type="range" class="ram-slider" id="modal-ram-slider" />
+            <div class="ram-scale"><span>1 GB</span><span id="modal-ram-max-label">16 GB</span></div>
+            <span class="text-dim" style="font-size:11px">Leave at 0 to use the global setting from Settings.</span>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Extra JVM arguments (this installation only)</label>
+            <input class="input mono" id="modal-jvm-args" placeholder="e.g. -XX:+UseG1GC — empty = global" />
+          </div>
+        </div>
+      </details>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="modal-cancel-btn">Cancel</button>
+      <button class="btn btn-primary" id="modal-create-btn"><span class="material-symbols-outlined" style="font-size:16px">add</span>Create Installation</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SERVER MODAL ============ -->
+<div class="modal-overlay hidden" id="server-modal-overlay">
+  <div class="modal-card fade-in" style="max-width:480px">
+    <div class="modal-head">
+      <h3 id="server-modal-title">Add Server</h3>
+      <button class="btn-icon" id="server-modal-close-btn"><span class="material-symbols-outlined">close</span></button>
+    </div>
+    <div class="modal-body">
+      <div class="field-group">
+        <label class="field-label">Server Name</label>
+        <input class="input" id="server-modal-name" placeholder="e.g. My SMP" />
+      </div>
+      <div class="field-group">
+        <label class="field-label">Server Address</label>
+        <input class="input mono" id="server-modal-address" placeholder="play.example.com:25565" />
+        <span class="text-dim" style="font-size:11px">Offline-mode servers only — this launcher uses offline profiles.</span>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Launch With Installation</label>
+        <select class="input" id="server-modal-instance"></select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="server-modal-cancel-btn">Cancel</button>
+      <button class="btn btn-primary" id="server-modal-save-btn"><span class="material-symbols-outlined" style="font-size:16px">save</span>Save Server</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ INSTALL PROGRESS OVERLAY ============ -->
+<div class="install-overlay glass-1 hidden" id="install-overlay">
+  <div class="io-icon"><span class="material-symbols-outlined">downloading</span></div>
+  <h1 class="io-title">Installing</h1>
+  <p class="io-phase text-dim" style="margin-bottom:14px;font-size:13px"></p>
+  <div class="io-pct">0%</div>
+  <div class="io-track"><div class="progress-track"><div class="progress-fill" style="width:0%"></div></div></div>
+  <div class="io-meta"><span class="io-size"></span><span class="io-speed"></span></div>
+  <div class="io-file"></div>
+  <div class="io-eta" style="font-family:var(--font-mono);font-size:11px;color:var(--on-surface-variant);margin-top:6px"></div>
+  <div class="io-error" style="display:none"></div>
+</div>
+
+<div id="toast-root"></div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

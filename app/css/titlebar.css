@@ -1,0 +1,41 @@
+#titlebar {
+  height: var(--titlebar-height);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: 12px;
+  -webkit-app-region: drag;
+  position: relative;
+  z-index: 100;
+  flex-shrink: 0;
+  background: rgba(14, 14, 16, 0.6);
+}
+#titlebar .tb-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--on-surface-variant);
+  text-transform: uppercase;
+}
+#titlebar .tb-brand img { width: 14px; height: 14px; border-radius: 3px; }
+#titlebar .tb-controls {
+  display: flex;
+  height: 100%;
+  -webkit-app-region: no-drag;
+}
+#titlebar .tb-btn {
+  width: 44px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--on-surface-variant);
+  transition: background 0.1s ease, color 0.1s ease;
+}
+#titlebar .tb-btn:hover { background: rgba(255, 255, 255, 0.08); color: var(--on-surface); }
+#titlebar .tb-btn.tb-close:hover { background: #e81123; color: #fff; }
+#titlebar .tb-btn .material-symbols-outlined { font-size: 16px; }
