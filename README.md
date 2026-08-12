@@ -22,7 +22,7 @@ Most launchers force you to re-download gigabytes of game files or log in with a
 
 | Feature | Description |
 |---|---|
-| **Offline-first launch** | Client jar resolved from your existing folder; system Java auto-detected (JAVA_HOME → PATH) with version verification before any download is attempted |
+| **Offline launch** | Client jar resolved from your existing folder; system Java auto-detected (JAVA_HOME → PATH) with version verification before any download is attempted |
 | **Link existing folder** | Use any compatible Minecraft directory as-is; game files are never copied or modified |
 | **Download & install** | Classic flow to download a fresh instance when Mojang services are reachable |
 | **525 merged versions** | Fabric & Quilt version lists merged and deduplicated into one picker |
