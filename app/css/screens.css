@@ -287,7 +287,15 @@
 }
 .modal-head { padding: 22px 26px; border-bottom: 1px solid rgba(132,150,126,0.12); display: flex; justify-content: space-between; align-items: center; }
 .modal-head h3 { font-size: 18px; }
-.modal-body { padding: 26px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
+.modal-body {
+  padding: 26px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
 .modal-footer { padding: 18px 26px; border-top: 1px solid rgba(132,150,126,0.12); display: flex; justify-content: flex-end; gap: 12px; background: rgba(14,14,16,0.4); }
 .field-group { display: flex; flex-direction: column; gap: 8px; }
 .field-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
