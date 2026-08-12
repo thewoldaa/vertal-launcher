@@ -53,6 +53,7 @@
     "mac": {
       "target": "dmg",
       "icon": "build/icon.png"
-    }
+    },
+    "afterPack": "scripts/after-pack.js"
   }
 }

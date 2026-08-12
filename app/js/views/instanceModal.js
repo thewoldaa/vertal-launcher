@@ -169,6 +169,7 @@ function setupRamSlider() {
   const slider = el('modal-ram-slider');
   slider.min = 0;
   slider.max = maxMB;
+  slider.step = 256;
   el('modal-ram-max-label').textContent = `${Math.round(maxMB / 1024)} GB`;
   const update = () => {
     const v = parseInt(slider.value, 10);

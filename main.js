@@ -6,6 +6,10 @@ const paths = require('./src/main/paths');
 const { getConfig } = require('./src/main/config');
 const { importSetupIni } = require('./src/main/setup-import');
 
+// Match the NSIS shortcuts' AppUserModelId so the taskbar uses the custom
+// icon and groups windows correctly (id.craftkal.vertal = build.appId).
+if (process.platform === 'win32') app.setAppUserModelId('id.craftkal.vertal');
+
 // Single instance lock — a second launch just focuses the existing window.
 const gotLock = app.requestSingleInstanceLock();
 if (!gotLock) {

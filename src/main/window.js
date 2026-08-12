@@ -1,5 +1,6 @@
 'use strict';
 const { BrowserWindow, screen } = require('electron');
+const fs = require('fs');
 const path = require('path');
 const { getConfig, setConfig } = require('./config');
 
@@ -23,7 +24,11 @@ function createWindow() {
     transparent: true,
     backgroundColor: '#00000000',
     show: false,
-    icon: path.join(__dirname, '..', '..', 'build', 'icon.png'),
+    // build/ is dev-only (not packaged); the packaged exe gets its icon via
+    // scripts/after-pack.js rcedit, so guard the path here.
+    icon: fs.existsSync(path.join(__dirname, '..', '..', 'build', 'icon.png'))
+      ? path.join(__dirname, '..', '..', 'build', 'icon.png')
+      : undefined,
     webPreferences: {
       preload: path.join(__dirname, '..', '..', 'preload.js'),
       contextIsolation: true,
