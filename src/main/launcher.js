@@ -76,6 +76,21 @@ async function installInstance(instanceId, onProgress) {
   if (!instance) throw new Error('Unknown installation.');
   const cfg = getConfig();
 
+  // ---- Linked installation: files already exist in the user's folder. ----
+  // No loader install, no downloads — we resolve the version chain from the
+  // linked folder and verify every file the launch command needs.
+  if (instance.sourceDir) {
+    onProgress && onProgress({ phase: 'Verifying linked installation', pct: 0, indeterminate: true });
+    const finalVersionId = instance.resolvedVersionId || instance.mcVersion;
+    const merged = await versionResolver.resolveChain(finalVersionId, { sourceDir: instance.sourceDir });
+    const gameDir = instances.gameDirFor(instance);
+    fs.mkdirSync(gameDir, { recursive: true });
+    const materialized = await gameFiles.ensureLinkedGameFiles(merged, instance.sourceDir, gameDir, onProgress);
+    const javaExe = await javaManager.resolveJava(merged, cfg.javaPath, onProgress);
+    instances.updateInstance(instanceId, { resolvedVersionId: finalVersionId, installed: true });
+    return { merged, materialized, javaExe, gameDir, finalVersionId };
+  }
+
   const finalVersionId = await ensureLoaderInstalled(instance, null, onProgress);
   const merged = await versionResolver.resolveChain(finalVersionId);
   const gameDir = instances.gameDirFor(instance);

@@ -4,6 +4,7 @@ const { createWindow } = require('./src/main/window');
 const { registerIpc } = require('./src/main/ipc');
 const paths = require('./src/main/paths');
 const { getConfig } = require('./src/main/config');
+const { importSetupIni } = require('./src/main/setup-import');
 
 // Single instance lock — a second launch just focuses the existing window.
 const gotLock = app.requestSingleInstanceLock();
@@ -19,6 +20,7 @@ if (!gotLock) {
   });
 
   app.whenReady().then(() => {
+    importSetupIni(); // absorb installer choices (data folder / profile) before the window loads
     const cfg = getConfig();
     if (cfg.customDataRoot) paths.setDataRootOverride(cfg.customDataRoot);
 

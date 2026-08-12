@@ -184,7 +184,8 @@
                 <span class="ram-readout" id="settings-ram-readout"></span>
               </div>
               <input type="range" class="ram-slider" id="settings-ram-slider" />
-              <div class="ram-scale"><span>1 GB</span><span id="settings-ram-max-label">16 GB</span></div>
+              <div class="ram-scale"><span>256 MB</span><span id="settings-ram-max-label">16 GB</span></div>
+              <span class="text-dim ram-warn hidden" id="settings-ram-warn"></span>
             </div>
 
             <div class="settings-card glass-2 panel" style="grid-column:span 12">
@@ -332,14 +333,15 @@
         </div>
 
         <div class="wz-panel hidden" id="wz-panel-install">
-          <div class="install-overlay" style="position:static;padding:20px 0">
-            <div class="io-icon" id="wz-install-icon"><span class="material-symbols-outlined">downloading</span></div>
-            <h1>Setting up Vertal</h1>
-            <div class="io-pct" id="wz-install-pct"></div>
-            <div class="io-track"><div class="progress-track"><div class="progress-fill" id="wz-install-fill" style="width:10%"></div></div></div>
-            <div class="io-file" id="wz-install-phase"></div>
-            <div class="io-error" id="wz-install-error" style="display:none"></div>
-            <button class="btn btn-primary hidden" id="wz-enter-app-btn" style="margin-top:26px">
+          <div class="wz-done">
+            <div class="wz-done-icon"><span class="material-symbols-outlined">rocket_launch</span></div>
+            <h2>You're all set!</h2>
+            <p class="wz-sub">Vertal is ready. Install any Minecraft version anytime from the <b>Versions</b> page — with or without a modloader (Vanilla, Fabric, Quilt, Forge, NeoForge).</p>
+            <div class="wz-done-rows">
+              <div class="wz-done-row"><span class="material-symbols-outlined">folder_open</span><div><div class="label">Data folder</div><div class="val mono" id="wz-done-path">—</div></div></div>
+              <div class="wz-done-row"><span class="material-symbols-outlined">person</span><div><div class="label">Profile</div><div class="val" id="wz-done-profile">No profile yet — add one later in Settings</div></div></div>
+            </div>
+            <button class="btn btn-primary" id="wz-enter-app-btn" style="margin-top:26px">
               <span class="material-symbols-outlined" style="font-size:17px">rocket_launch</span>Enter Vertal Launcher
             </button>
           </div>
@@ -370,6 +372,31 @@
       <div class="field-group">
         <label class="field-label">Installation Name</label>
         <input class="input" id="modal-name" placeholder="e.g. My Modded World" />
+      </div>
+
+      <div class="field-group" id="modal-linked-wrap" style="display:none">
+        <label class="field-label">How to install</label>
+        <div class="linked-mode-grid">
+          <div class="linked-mode-opt selected" data-mode="download">Download &amp; install</div>
+          <div class="linked-mode-opt" data-mode="link">Use existing folder (link)</div>
+        </div>
+      </div>
+
+      <div class="field-group" id="modal-linked-section" style="display:none">
+        <label class="field-label">Existing Minecraft folder</label>
+        <div class="linked-path-row">
+          <input class="input" id="modal-linked-path" placeholder="e.g. D:\minecraft 26.1.2-... or a .minecraft folder" />
+          <button class="btn btn-ghost" id="modal-linked-browse" type="button">Browse…</button>
+          <button class="btn btn-ghost" id="modal-linked-scan" type="button">Scan</button>
+        </div>
+        <div id="modal-linked-result" class="hidden">
+          <div id="modal-linked-chips" class="row" style="gap:8px;flex-wrap:wrap"></div>
+          <div class="field-group" id="modal-linked-version-wrap" style="display:none;margin:10px 0 0">
+            <label class="field-label">Use version profile</label>
+            <select class="input" id="modal-linked-version"></select>
+          </div>
+        </div>
+        <p id="modal-linked-error" class="manifest-note hidden" style="margin:8px 0 0"></p>
       </div>
 
       <div class="field-row-2" id="modal-picker">
@@ -415,7 +442,8 @@
               <span class="ram-readout" id="modal-ram-readout"></span>
             </div>
             <input type="range" class="ram-slider" id="modal-ram-slider" />
-            <div class="ram-scale"><span>1 GB</span><span id="modal-ram-max-label">16 GB</span></div>
+            <div class="ram-scale"><span>256 MB</span><span id="modal-ram-max-label">16 GB</span></div>
+            <span class="text-dim ram-warn hidden" id="modal-ram-warn"></span>
             <span class="text-dim" style="font-size:11px">Leave at 0 to use the global setting from Settings.</span>
           </div>
           <div class="field-group">

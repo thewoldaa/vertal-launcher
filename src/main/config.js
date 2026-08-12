@@ -4,10 +4,9 @@ const { JsonStore } = require('./store');
 const paths = require('./paths');
 
 function defaultRamMB() {
-  const totalGB = os.totalmem() / (1024 ** 3);
-  // Leave headroom for the OS: aim for ~40% of total RAM, clamped to sane bounds.
-  const suggested = Math.round((totalGB * 0.4) / 0.5) * 512;
-  return Math.max(1024, Math.min(8192, suggested));
+  // 4 GB is the sweet spot for modern Minecraft with modloaders; users can
+  // lower it down to 256 MB (slow but workable) or raise it up to 8 GB.
+  return 4096;
 }
 
 const DEFAULT_CONFIG = {

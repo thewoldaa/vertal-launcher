@@ -29,11 +29,21 @@ function mavenNameToPath(name) {
   return `${groupPath}/${artifact}/${version}/${fileBase}.jar`;
 }
 
+/** Newer Mojang version JSONs omit artifact `path` — derive the relative
+ * library path from the download URL (strip scheme + host), falling back
+ * to the maven coordinate when the URL is unparseable. */
+function deriveRelPath(url, name) {
+  const m = /^https?:\/\/[^/]+\/(.+)$/.exec(url || '');
+  if (m && m[1] && !m[1].includes('..')) return m[1];
+  return mavenNameToPath(name);
+}
+
 /**
  * Resolves the list of classpath libraries + any natives-jar extraction
  * tasks for a resolved version JSON's `libraries` array.
  */
-function planLibraries(versionJson) {
+function planLibraries(versionJson, opts = {}) {
+  const librariesDir = (opts && opts.librariesDir) || paths.librariesDir();
   const classpathTasks = [];   // { url, dest, sha1, size, label } + absPath for classpath
   const nativeTasks = [];      // same shape, plus `extractExclude`
   const seen = new Set();
@@ -44,18 +54,19 @@ function planLibraries(versionJson) {
     // Modern Mojang-format library with a direct downloadable artifact.
     if (lib.downloads && lib.downloads.artifact) {
       const art = lib.downloads.artifact;
-      const dest = path.join(paths.librariesDir(), art.path);
+      const rel = art.path || deriveRelPath(art.url, lib.name);
+      const dest = path.join(librariesDir, rel);
       const key = 'cp:' + dest;
       if (!seen.has(key)) {
         seen.add(key);
-        classpathTasks.push({ url: art.url, dest, sha1: art.sha1, size: art.size, label: path.basename(art.path), absPath: dest });
+        classpathTasks.push({ url: art.url, dest, sha1: art.sha1, size: art.size, label: path.basename(rel), absPath: dest });
       }
     } else if (lib.name && lib.url !== undefined) {
       // Simple maven-coordinate format used by Fabric/Quilt profile JSON.
       const relPath = mavenNameToPath(lib.name);
       const base = lib.url && lib.url.length ? lib.url : 'https://repo1.maven.org/maven2/';
       const url = base.replace(/\/?$/, '/') + relPath;
-      const dest = path.join(paths.librariesDir(), relPath);
+      const dest = path.join(librariesDir, relPath);
       const key = 'cp:' + dest;
       if (!seen.has(key)) {
         seen.add(key);
@@ -64,7 +75,7 @@ function planLibraries(versionJson) {
     } else if (lib.name && !lib.downloads) {
       // Bare maven coordinate with no explicit url — default to Maven Central.
       const relPath = mavenNameToPath(lib.name);
-      const dest = path.join(paths.librariesDir(), relPath);
+      const dest = path.join(librariesDir, relPath);
       const key = 'cp:' + dest;
       if (!seen.has(key)) {
         seen.add(key);
@@ -78,7 +89,7 @@ function planLibraries(versionJson) {
       const classifierKey = lib.natives[osKey];
       if (classifierKey && lib.downloads && lib.downloads.classifiers && lib.downloads.classifiers[classifierKey]) {
         const nat = lib.downloads.classifiers[classifierKey];
-        const dest = path.join(paths.librariesDir(), nat.path);
+        const dest = path.join(librariesDir, nat.path);
         nativeTasks.push({
           url: nat.url,
           dest,
@@ -211,4 +222,122 @@ async function ensureGameFiles(versionJson, gameDir, onProgress) {
   };
 }
 
-module.exports = { ensureGameFiles, planLibraries, mavenNameToPath };
+/**
+ * Materializes a LINKED installation — files already exist in the user's
+ * own Minecraft folder (sourceDir). Nothing is downloaded; every classpath
+ * jar, the client jar and the asset index are verified to exist, and the
+ * legacy natives are extracted from the linked libraries into Vertal's
+ * natives cache (the linked folder is only ever READ).
+ * @param {object} versionJson - fully-resolved (merged) version JSON
+ * @param {string} sourceDir - install root (has versions/, libraries/, assets/)
+ * @param {string} gameDir - instance's game directory (legacy asset mirroring)
+ * @returns {Promise<{classpath:string[], nativesDir:string, clientJarPath:string, assetsRoot:string, assetIndexId:string, logArg:string|null}>}
+ */
+async function ensureLinkedGameFiles(versionJson, sourceDir, gameDir, onProgress) {
+  const versionId = versionJson.id;
+
+  // Client jar: the resolved chain carries the BASE version's downloads
+  // (e.g. "26.1.2/26.1.2.jar"), which is where the jar lives in the
+  // official layout even when launching through a loader profile. Newer
+  // Mojang JSONs omit `path`, so fall back to versions/<baseId>/<baseId>.jar.
+  let clientJarPath = null;
+  const clientDl = versionJson.downloads && versionJson.downloads.client;
+  const baseId = versionJson.baseId || versionId;
+  if (clientDl && clientDl.path) {
+    clientJarPath = path.join(sourceDir, 'versions', clientDl.path);
+  } else {
+    clientJarPath = path.join(sourceDir, 'versions', baseId, `${baseId}.jar`);
+  }
+
+  const libsDir = path.join(sourceDir, 'libraries');
+  const { classpathTasks, nativeTasks } = planLibraries(versionJson, { librariesDir: libsDir });
+
+  const missing = [];
+  for (const task of classpathTasks) {
+    if (!fs.existsSync(task.dest)) missing.push(task.label);
+  }
+  const clientMissing = !fs.existsSync(clientJarPath);
+  const clientFetchable = !!(clientDl && clientDl.url);
+  if (clientMissing && !clientFetchable) missing.push(path.basename(clientJarPath));
+  if (missing.length) {
+    throw new Error(
+      `The linked installation is missing ${missing.length} file(s) (e.g. ${missing.slice(0, 6).join(', ')}). ` +
+      'The folder may be incomplete — check it, or create a normal (download) installation instead.'
+    );
+  }
+
+  onProgress && onProgress({ phase: 'Verifying linked installation', pct: 5, indeterminate: true });
+
+  // The client jar is the one file we may fetch (it is small and is the
+  // official launcher's own behavior); everything else must already be local.
+  if (clientMissing && clientFetchable) {
+    onProgress && onProgress({ phase: 'Downloading missing client jar', pct: 10, indeterminate: true });
+    try {
+      fs.mkdirSync(path.dirname(clientJarPath), { recursive: true });
+      await downloadFile(clientDl.url, clientJarPath, { sha1: clientDl.sha1, size: clientDl.size });
+      onProgress && onProgress({ phase: 'Verifying linked installation', pct: 20, indeterminate: true });
+    } catch (e) {
+      throw new Error(
+        `The linked folder is missing the client jar (${path.basename(clientJarPath)}) and downloading it failed: ${e.message}`
+      );
+    }
+  }
+
+  // Assets: read the index from the linked folder; never download.
+  const indexId = versionJson.assetIndex && versionJson.assetIndex.id;
+  const indexPath = indexId ? path.join(sourceDir, 'assets', 'indexes', `${indexId}.json`) : null;
+  if (!indexPath || !fs.existsSync(indexPath)) {
+    throw new Error(`Asset index "${indexId || '?'}" was not found in the linked folder (${path.join(sourceDir, 'assets', 'indexes')}).`);
+  }
+  const assetIndex = JSON.parse(fs.readFileSync(indexPath, 'utf-8'));
+  const assetsRoot = path.join(sourceDir, 'assets');
+  onProgress && onProgress({ phase: 'Verifying linked installation', pct: 30, indeterminate: true });
+
+  // Legacy pre-1.7 virtual/resource indexes: mirror objects into <gameDir>/resources.
+  if (assetIndex.virtual || assetIndex.map_to_resources) {
+    const objectsDir = path.join(assetsRoot, 'objects');
+    const resourcesDir = path.join(gameDir || sourceDir, 'resources');
+    fs.mkdirSync(resourcesDir, { recursive: true });
+    for (const [name, obj] of Object.entries(assetIndex.objects || {})) {
+      const src = path.join(objectsDir, obj.hash.slice(0, 2), obj.hash);
+      const dest = path.join(resourcesDir, name);
+      if (!fs.existsSync(src) || fs.existsSync(dest)) continue;
+      fs.mkdirSync(path.dirname(dest), { recursive: true });
+      fs.copyFileSync(src, dest);
+    }
+  }
+
+  // Natives: extract legacy classifier jars from the linked libraries into
+  // Vertal's own cache (we never write into the linked folder).
+  const nativesDir = paths.nativesTmpDir(versionId);
+  if (nativeTasks.length) {
+    const present = nativeTasks.filter((t) => fs.existsSync(t.dest));
+    extractNatives(present, nativesDir);
+  }
+  onProgress && onProgress({ phase: 'Verifying linked installation', pct: 70, indeterminate: true });
+
+  // Optional log4j2 config — the official launcher keeps it next to the
+  // version json; skip the log argument when it is absent (harmless).
+  let logArg = null;
+  if (versionJson.logging && versionJson.logging.client) {
+    const file = versionJson.logging.client.file;
+    const logPath = path.join(sourceDir, 'versions', versionId, file.id);
+    if (fs.existsSync(logPath)) {
+      logArg = versionJson.logging.client.argument.replace('${path}', logPath);
+    }
+  }
+
+  const classpath = [...classpathTasks.map((t) => t.absPath), clientJarPath];
+  onProgress && onProgress({ phase: 'Ready', pct: 100 });
+
+  return {
+    classpath,
+    nativesDir,
+    clientJarPath,
+    assetsRoot,
+    assetIndexId: indexId,
+    logArg,
+  };
+}
+
+module.exports = { ensureGameFiles, ensureLinkedGameFiles, planLibraries, mavenNameToPath };

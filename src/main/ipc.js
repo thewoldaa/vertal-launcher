@@ -16,6 +16,7 @@ const loaderForge = require('./loader-forge');
 const launcher = require('./launcher');
 const javaManager = require('./java-manager');
 const servers = require('./servers');
+const localScan = require('./local-scan');
 const { getMainWindow } = require('./window');
 
 function send(channel, payload) {
@@ -80,6 +81,11 @@ function registerIpc() {
     const requestId = randomUUID();
     (async () => {
       try {
+        // Installing extracts ~1 GB of assets and libraries — require a real
+        // machine: at least 2 GB of system RAM (same bar as launching).
+        if (os.totalmem() < 2 * 1024 ** 3) {
+          throw new Error('At least 2 GB of RAM is required to install Minecraft on this machine.');
+        }
         await launcher.installInstance(instanceId, (state) => {
           send('install:event', { requestId, instanceId, type: 'progress', ...state });
         });
@@ -142,6 +148,15 @@ function registerIpc() {
     return mods.addModFiles(instanceId, result.filePaths);
   });
   ipcMain.handle('mods:openFolder', (e, instanceId) => shell.openPath(mods.modsDirFor(instanceId)));
+
+  // ---- Local linked installations (existing Minecraft folders) ----
+  ipcMain.handle('local:scanFolder', (e, folder) => localScan.scanFolder(folder));
+  ipcMain.handle('local:selectFolder', async () => {
+    const win = getMainWindow();
+    const result = await dialog.showOpenDialog(win, { properties: ['openDirectory'] });
+    if (result.canceled) return null;
+    return result.filePaths[0];
+  });
 
   // ---- Java ----
   ipcMain.handle('java:verify', (e, exePath) => javaManager.verifyJavaExecutable(exePath));

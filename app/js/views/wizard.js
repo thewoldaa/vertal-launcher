@@ -1,4 +1,4 @@
-import { setState } from '../state.js';
+import { state, setState } from '../state.js';
 import { toast } from '../toast.js';
 import { formatBytes, initials, escapeHtml } from '../format.js';
 import { applyTheme } from './settings.js';
@@ -8,7 +8,6 @@ let stepIndex = 0;
 let selectedLanguage = 'en';
 let agreed = false;
 let chosenDataPath = null;
-let installStarted = false;
 
 function el(id) { return document.getElementById(id); }
 
@@ -27,9 +26,17 @@ function showStep(i) {
   const footer = el('wizard-footer');
   footer.classList.toggle('hidden', stepId === 'install');
   el('wizard-back-btn').disabled = i === 0;
-  el('wizard-next-btn').textContent = stepId === 'path' ? 'Install' : 'Next';
+  el('wizard-next-btn').textContent = stepId === 'path' ? 'Next' : 'Next';
 
-  if (stepId === 'install' && !installStarted) startInstall();
+  if (stepId === 'install') fillDoneSummary();
+}
+
+function fillDoneSummary() {
+  el('wz-done-path').textContent = chosenDataPath || 'Default';
+  const accounts = state.accounts;
+  el('wz-done-profile').textContent = accounts.length
+    ? accounts.map((a) => a.username).join(', ')
+    : 'No profile yet — add one later in Settings';
 }
 
 function canProceedFrom(stepId) {
@@ -128,58 +135,10 @@ function initPathStep() {
   });
 }
 
-// ---------------- Step: Install ----------------
-function setInstallUI({ phase, pct, indeterminate, error, done }) {
-  el('wz-install-phase').textContent = phase || '';
-  el('wz-install-pct').textContent = indeterminate || done ? '' : `${Math.round(pct || 0)}%`;
-  const fill = el('wz-install-fill');
-  fill.style.width = done ? '100%' : indeterminate ? '30%' : `${Math.min(100, pct || 0)}%`;
-  fill.classList.toggle('shimmer-bar', !!indeterminate && !done);
-  el('wz-install-error').style.display = error ? 'block' : 'none';
-  el('wz-install-error').textContent = error || '';
-  el('wz-enter-app-btn').classList.toggle('hidden', !(done || error));
-  el('wz-enter-app-btn').textContent = error ? 'Enter Vertal anyway' : 'Enter Vertal';
-  el('wz-install-icon').querySelector('.material-symbols-outlined').textContent = error ? 'error' : done ? 'check_circle' : 'downloading';
-}
-
-async function startInstall() {
-  installStarted = true;
-  setInstallUI({ phase: 'Setting up your data folder…', indeterminate: true });
-
-  try {
-    await window.api.wizard.setDataRoot(chosenDataPath);
-    await window.api.config.set({ language: selectedLanguage });
-
-    setInstallUI({ phase: 'Fetching the latest release…', indeterminate: true });
-    const manifest = await window.api.mojang.listVersions();
-    const latest = manifest.latest.release;
-
-    const instance = await window.api.instances.create({
-      name: `Minecraft ${latest}`,
-      mcVersion: latest,
-      versionType: 'release',
-      loader: 'vanilla',
-      separateFolder: false,
-    });
-
-    const { requestId } = await window.api.install.start(instance.id);
-    await new Promise((resolve, reject) => {
-      const off = window.api.install.onEvent((evt) => {
-        if (evt.requestId !== requestId) return;
-        if (evt.type === 'progress') setInstallUI(evt);
-        else if (evt.type === 'done') { off(); resolve(); }
-        else if (evt.type === 'error') { off(); reject(new Error(evt.message)); }
-      });
-    });
-
-    await window.api.instances.setActive(instance.id);
-    setInstallUI({ phase: `Minecraft ${latest} is ready.`, done: true });
-  } catch (e) {
-    setInstallUI({ phase: 'Setup failed', error: e.message });
-  }
-}
-
 function finishWizard(onComplete) {
+  // Persist the choices made in the wizard (data folder, language).
+  if (chosenDataPath) window.api.wizard.setDataRoot(chosenDataPath).catch(() => {});
+  if (selectedLanguage) window.api.config.set({ language: selectedLanguage }).catch(() => {});
   window.api.wizard.complete().then(() => {
     applyTheme('dark');
     el('screen-wizard').classList.add('hidden');
@@ -207,7 +166,6 @@ export function initWizard(onComplete) {
 
 export async function startWizard() {
   stepIndex = 0;
-  installStarted = false;
   chosenDataPath = await window.api.wizard.getDefaultDataPath();
   el('wz-path-display').value = chosenDataPath;
   refreshPathUI();

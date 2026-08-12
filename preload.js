@@ -83,6 +83,11 @@ contextBridge.exposeInMainWorld('api', {
     selectJava: () => ipcRenderer.invoke('dialog:selectJava'),
   },
 
+  local: {
+    scanFolder: (folder) => ipcRenderer.invoke('local:scanFolder', folder),
+    selectFolder: () => ipcRenderer.invoke('local:selectFolder'),
+  },
+
   app: {
     openPath: (target) => ipcRenderer.invoke('app:openPath', target),
     openExternal: (url) => ipcRenderer.invoke('app:openExternal', url),

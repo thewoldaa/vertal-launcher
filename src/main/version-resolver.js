@@ -42,10 +42,21 @@ function mergeVersionJson(child, parent) {
     assets: parent.assets,
     javaVersion: child.javaVersion || parent.javaVersion,
     logging: parent.logging,
+    // The vanilla base id — the client jar always lives under versions/<baseId>.
+    baseId: parent.baseId || parent.id,
   };
 }
 
-async function loadRawVersionJson(versionId) {
+async function loadRawVersionJson(versionId, opts = {}) {
+  const { sourceDir } = opts;
+  if (sourceDir) {
+    // Linked installation: the version JSON lives in the external folder.
+    const p = path.join(sourceDir, 'versions', versionId, `${versionId}.json`);
+    if (!fs.existsSync(p)) {
+      throw new Error(`Version "${versionId}" was not found in the linked folder (${path.join(sourceDir, 'versions')}).`);
+    }
+    return JSON.parse(fs.readFileSync(p, 'utf-8'));
+  }
   const cachedPath = path.join(paths.versionDir(versionId), `${versionId}.json`);
   if (fs.existsSync(cachedPath)) {
     try {
@@ -60,14 +71,15 @@ async function loadRawVersionJson(versionId) {
   return raw;
 }
 
-async function resolveChain(versionId, depth = 0) {
+async function resolveChain(versionId, opts = {}) {
+  const depth = opts.depth || 0;
   if (depth > 5) throw new Error(`inheritsFrom chain too deep starting at ${versionId} — possible cycle.`);
-  const raw = await loadRawVersionJson(versionId);
+  const raw = await loadRawVersionJson(versionId, opts);
   if (raw.inheritsFrom) {
-    const parent = await resolveChain(raw.inheritsFrom, depth + 1);
+    const parent = await resolveChain(raw.inheritsFrom, { ...opts, depth: depth + 1 });
     return mergeVersionJson(raw, parent);
   }
-  return { ...raw, arguments: normalizeArguments(raw) };
+  return { ...raw, arguments: normalizeArguments(raw), baseId: raw.id };
 }
 
 module.exports = { resolveChain, mergeVersionJson, normalizeArguments, loadRawVersionJson };

@@ -73,11 +73,21 @@ function renderJavaEnv() {
   // range instead of silently clamping the thumb away from the real value.
   const maxRam = Math.max(baseMax, state.config.ramMB);
   ramSlider.max = String(maxRam);
-  ramSlider.min = '1024';
+  ramSlider.min = '256';
   ramSlider.step = '256';
   ramSlider.value = String(state.config.ramMB);
   el('settings-ram-readout').innerHTML = `<b>${ramLabel(state.config.ramMB)}</b> allocated`;
   el('settings-ram-max-label').textContent = ramLabel(maxRam);
+  updateRamWarn();
+}
+
+function updateRamWarn() {
+  const mb = parseInt(el('settings-ram-slider').value, 10) || 0;
+  const warn = el('settings-ram-warn');
+  warn.classList.toggle('hidden', mb >= 2048);
+  warn.textContent = mb < 2048
+    ? 'Below 2 GB loading will be very slow — 2 GB or more is recommended.'
+    : '';
 }
 
 function renderTheme() {
@@ -150,6 +160,7 @@ export function initSettingsView() {
 
   el('settings-ram-slider').addEventListener('input', (e) => {
     el('settings-ram-readout').innerHTML = `<b>${ramLabel(parseInt(e.target.value, 10))}</b> allocated`;
+    updateRamWarn();
   });
 
   el('settings-browse-java').addEventListener('click', async () => {

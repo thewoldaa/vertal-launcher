@@ -13,6 +13,9 @@ function getInstance(id) {
 }
 
 function gameDirFor(instance) {
+  // Linked installations: the game writes into the user's own folder
+  // (profile gameDir), or the install root itself when no gameDir was set.
+  if (instance.sourceDir) return instance.customGameDir || instance.sourceDir;
   if (instance.customGameDir) return instance.customGameDir;
   if (instance.separateFolder) return paths.instanceDir(instance.id);
   return paths.sharedGameDir();
@@ -34,13 +37,14 @@ function createInstance(data) {
     versionType: data.versionType || 'release',
     loader,
     loaderVersion: data.loaderVersion || 'latest',
-    resolvedVersionId: null,
+    resolvedVersionId: data.resolvedVersionId || null,
+    sourceDir: data.sourceDir || null,
     separateFolder: !!data.separateFolder,
     customGameDir: data.customGameDir || null,
     createdAt: Date.now(),
     lastPlayedAt: null,
     totalPlaytimeMs: 0,
-    installed: false,
+    installed: !!data.sourceDir, // linked installations are verified, not downloaded
     ramMBOverride: data.ramMBOverride || null,
     jvmArgsOverride: data.jvmArgsOverride || null,
   };
@@ -70,7 +74,7 @@ function deleteInstance(id) {
     const remaining = instancesStore.read();
     setConfig({ activeInstanceId: remaining[0] ? remaining[0].id : null });
   }
-  if (inst && inst.separateFolder && !inst.customGameDir) {
+  if (inst && inst.separateFolder && !inst.customGameDir && !inst.sourceDir) {
     try { fs.rmSync(paths.instanceDir(id), { recursive: true, force: true }); } catch (e) { /* best effort */ }
   }
   return true;
