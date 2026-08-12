@@ -1,4 +1,4 @@
-# ⛏️ Vertal Launcher
+# Vertal Launcher
 
 **An offline-first Minecraft launcher for Windows.** Link an existing Minecraft folder and play **immediately — no re-downloading, no Microsoft account, no ads, no telemetry**. Everything runs locally on your machine.
 
