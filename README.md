@@ -1,165 +1,148 @@
-# Vertal Launcher
+# ⛏️ Vertal Launcher
 
-An offline-first Minecraft launcher built with Electron. No Microsoft/Mojang
-account, no sign-in screen — pick a username and play. Supports **Vanilla**,
-**Fabric**, **Quilt**, **Forge** and **NeoForge**, with multiple named
-installations, a mods manager, and a from-scratch download/launch engine
-(no CurseForge/MultiMC/PrismLauncher dependency — this app talks to Mojang's
-own servers directly).
+**An offline-first Minecraft launcher for Windows.** Link an existing Minecraft folder and play **immediately — no re-downloading, no Microsoft account, no ads, no telemetry**. Everything runs locally on your machine.
 
-Built for **CraftKal**.
+![Version](https://img.shields.io/badge/version-1.0.0-4f7cff)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-0078d6)
+![Built with](https://img.shields.io/badge/built%20with-Electron-9cf)
 
 ---
 
-## 1. What it does
+## Why Vertal Launcher?
 
-- **Offline profiles** — a local username + deterministic UUID (the same
-  algorithm Bukkit/Spigot/Paper use for `OfflinePlayer:<name>`), no account
-  needed. Works for singleplayer, LAN, and offline-mode servers.
-- **Installations** (instances) — each is a named Minecraft version + loader
-  combo (e.g. "1.21.1 Fabric"), optionally with its own separate
-  saves/mods/config folder.
-- **Vanilla** — downloads client jar, libraries, natives, assets and the
-  correct Java runtime straight from Mojang's public Piston Meta CDN (the
-  same one the official launcher uses).
-- **Fabric / Quilt** — resolved via their official meta APIs
-  (`meta.fabricmc.net`, `meta.quiltmc.org`), which hand back a ready-to-use
-  launch profile.
-- **Forge / NeoForge** — installed by downloading the *official* installer
-  jar and running it headlessly (`--installClient`). This is the same
-  approach several other lightweight launchers use, since Forge's own
-  install pipeline (binary-patching the client jar) is not something worth
-  reimplementing from scratch. See **Known limitations** below.
-- **Mods manager** — enable/disable/remove `.jar` files per installation,
-  or drop new ones in via a file picker.
-- **Server Manager (quick-play)** — save servers and jump straight in. Vertal
-  appends `--server/--port` to the launch command (rule-gated for modern
-  versions, with a fallback for legacy ones), so offline-mode servers work
-  exactly like SKLauncher's server list — no Microsoft account required.
-- **Display & Launch** — custom window resolution with a fullscreen toggle,
-  and an option to close the launcher automatically once the game starts
-  (`closeOnLaunch`).
-- **Per-installation tuning** — each installation can override the RAM
-  allocation and extra JVM args; leave them empty to inherit the global
-  Settings values.
-- **Settings** — RAM allocation, custom Java path (auto-downloads one if you
-  don't set one), extra JVM args, window resolution/fullscreen,
-  close-on-launch, light/dark theme.
-- **First-run wizard** — language, a short EULA/terms screen, offline
-  profile creation, and where game files should live on disk.
+Most launchers force you to re-download gigabytes of game files or log in with a Microsoft account. Vertal Launcher takes the opposite approach:
 
-## 2. Requirements
+- **🔗 Link, don't download.** Point the launcher at an existing Minecraft installation folder (official launcher, SKLauncher, or any compatible layout) and it resolves **everything locally** — versions, libraries, assets, and even the client jar. Zero downloads, even when Mojang's servers are down.
+- **🔒 Private by design.** Offline accounts (no Microsoft login), no ads, no analytics, no tracking. Your data never leaves your computer.
+- **🧩 Loader support.** Vanilla, **Fabric** and **Quilt** (500+ merged versions), plus **Forge / NeoForge** latest auto-detect.
+- **🖥️ Clean custom UI.** Dark, minimal, borderless design with per-instance custom icons — including your own icon on the Windows taskbar and installer.
 
-- **Node.js 18+** (20 LTS recommended) and npm, to build/run the app itself.
-- **Internet access** — the app itself doesn't ship Java or Minecraft; it
-  downloads both on demand, the same way the official launcher does.
-- You do **not** need Java pre-installed — Vertal downloads the correct
-  Mojang-provided runtime automatically the first time you install a
-  version, unless you point it at your own Java in Settings.
+## Features
 
-## 3. Running it
+| Feature | Description |
+|---|---|
+| **Offline-first launch** | Client jar resolved from your existing folder; system Java auto-detected (JAVA_HOME → PATH) with version verification before any download is attempted |
+| **Link existing folder** | Use any compatible Minecraft directory as-is; game files are never copied or modified |
+| **Download & install** | Classic flow to download a fresh instance when Mojang services are reachable |
+| **525 merged versions** | Fabric & Quilt version lists merged and deduplicated into one picker |
+| **Forge / NeoForge** | "Latest (auto-detect)" support |
+| **RAM control** | Per-instance or global RAM (default 4 GB, 256 MB steps); smart heap sizing (`-Xms`) so the game visibly starts with the memory you set |
+| **Mod-friendly** | Loads your existing mods folder as-is (200+ mods tested, incl. Sodium, Iris, Lithium, JEI, Xaero's) |
+| **Offline accounts** | Multiple local profiles, no Microsoft auth required |
+| **Custom icons** | Per-instance icon, taskbar app icon, and installer icon — all yours |
+| **One-flow installer** | NSIS installer with a single setup page: data folder + profile name (optional), written to `setup.ini` and imported on first launch |
+| **Scrollable dialogs** | Long forms and edit modals stay usable on small windows |
+
+## Requirements
+
+- **Windows 10 / 11** (64-bit)
+- **Java 17+** — recommended. If Java is missing, the launcher falls back to a detected system JVM (`JAVA_HOME` → `PATH`) and only attempts a runtime download when nothing is available and Mojang's services are reachable
+- An existing Minecraft installation (optional) — used by the **link existing folder** flow. Without one, use **Download & install**
+
+## Installation
+
+1. Download **`Vertal Launcher Setup 1.0.0.exe`** from the [Releases](https://github.com/thewoldaa/vertal-launcher/releases) page
+2. Run the installer (no administrator rights required)
+3. On the setup page you can optionally set your **data folder** and **profile name** — the launcher will prefill them for you
+4. Done — launch Vertal Launcher and create your first instance
+
+> 💡 The installer is fully offline: it does not contact any server during installation.
+
+## Getting Started
+
+### 1. Link an existing folder (recommended — instant play)
+
+1. **Instances → New Instance**
+2. Choose **"Use existing folder"** and pick your Minecraft directory (e.g. one created by the official launcher or SKLauncher)
+3. The launcher auto-detects the game version and loader profile (e.g. *Minecraft 26.1.2 + Fabric 0.19.3*)
+4. Set the memory you want (or leave **Global**) and click **Launch** 🎮
+
+### 2. Download & install
+
+1. **Instances → New Instance → "Download & install"**
+2. Pick a version and loader from the pickers
+3. The launcher downloads the version metadata, libraries and the client jar (requires Mojang services to be reachable)
+
+### 3. Profiles & RAM
+
+- Create multiple **offline profiles** (no Microsoft account)
+- Set **per-instance RAM** or leave it on **Global** (managed in Settings — default 4 GB). The readout shows "Global (X GB from Settings)" so you always know what will be used
+
+## Building from Source
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org) 18+
+- npm
+
+### Commands
 
 ```bash
-npm install
-npm start
+npm install          # install dependencies
+npm start            # run the app in development mode
+npm run pack         # build an unpacked Windows app (dist/win-unpacked)
+npm run dist         # build the NSIS installer (dist/Vertal Launcher Setup <ver>.exe)
 ```
 
-That's it — `npm start` boots the app in dev mode straight from source.
+> Note: on machines where the electron-builder `winCodeSign` cache fails without administrator rights, build with:
+> `npx electron-builder --win -c.win.signAndEditExecutable=false`
+> Custom icon embedding is handled automatically by `scripts/after-pack.js` (rcedit).
 
-## 4. Building an installer
+### Tests
 
 ```bash
-npm run pack   # unpacked build in dist/ — fastest way to smoke-test a real build
-npm run dist   # full installer (NSIS on Windows by default — see package.json "build")
+node scripts/unit-test-launch-command.js   # 31 unit tests for the launch command builder
+node scripts/integration-linked.js         # integration test for the "link existing folder" flow
 ```
 
-`package.json`'s `build` block targets Windows (NSIS) by default, with
-Linux (AppImage) and macOS (dmg) also configured. Adjust
-`build.win` / `build.linux` / `build.mac` in `package.json` if you want a
-different target, and run `electron-builder` for the platform you're
-packaging for (cross-compiling Windows installers from Linux/macOS needs
-Wine — see the [electron-builder docs](https://www.electron.build/multi-platform-build)).
+### Dev tools
 
-## 5. Project structure
+- `scripts/cdp-eval.js <expression> [port]` — evaluate JavaScript in the running app via the Chrome DevTools Protocol (`--remote-debugging-port`)
+
+## Project Structure
 
 ```
-main.js                 Electron entry point
-preload.js               contextBridge — the only thing the renderer can call into main with
-
-src/main/                 Main process (Node.js side)
-  paths.js                 Where every file on disk lives (supports a user-chosen data root)
-  store.js / config.js      Tiny JSON-file settings/accounts/instances store
-  offline-auth.js           Offline profile + UUID generation
-  instances.js               CRUD for named installations
-  mods.js                    Per-instance mods folder management
-  downloader.js              Concurrent download queue w/ sha1 verification + progress
-  mojang-api.js               Piston Meta manifest / version JSON / Java runtime manifest
-  java-manager.js             Resolves or auto-downloads a working `java`
-  rules.js                    Shared Mojang {os, features} rule evaluator
-  game-files.js                Downloads client jar + libraries + natives + assets for a resolved version
-  loader-fabric.js             Fabric & Quilt profile resolution
-  loader-forge.js              Forge & NeoForge version discovery + headless installer runner
-  version-resolver.js           Merges a loader's `inheritsFrom` chain into one launchable version JSON
-  launcher.js                    Builds the JVM/game launch command and spawns Minecraft
-  servers.js                     Server list store (quick-play targets)
-  window.js / ipc.js              Frameless window + all IPC channel handlers
-
-scripts/
-  unit-test-launch-command.js     Plain-Node unit tests for buildLaunchCommand (quick-play, resolution, logArg)
-  cdp-eval.js / cdp-screenshot.js  Dev helpers: drive the running renderer over the DevTools protocol
-
-app/                       Renderer (what you see)
-  index.html                 Single-page shell — titlebar, sidebar, all views, wizard, modals
-  css/                        tokens.css (design system), base.css, titlebar.css, layout.css, screens.css
-  js/
-    state.js, format.js, toast.js, router.js, play.js, installOverlay.js
-    components/titlebar.js
-    views/{home,versions,mods,settings,wizard,instanceModal,servers}.js
-  assets/                    App icon + decorative background/block art
+vertal-launcher/
+├── app/                    # Renderer: UI, views, styles
+│   ├── index.html
+│   ├── css/
+│   └── js/                 # Views & modal logic
+├── src/main/               # Main process modules
+│   ├── launcher.js         # Launch command builder (RAM, Xms/Xmx, args)
+│   ├── java-manager.js     # Java detection & verification (system fallback)
+│   ├── game-files.js       # Version/library/assets resolution (offline-first)
+│   ├── local-scan.js       # "Link existing folder" scanner
+│   ├── version-resolver.js # Fabric/Quilt version merging & Forge auto-detect
+│   ├── loader-fabric.js    # Fabric/Quilt loader handling
+│   ├── loader-forge.js     # Forge latest auto-detect
+│   ├── offline-auth.js     # Local offline profiles
+│   └── ...                 # instances, mods, servers, downloader, mojang-api
+├── build/installer.nsh     # NSIS installer custom page (data folder + profile)
+├── scripts/                # Build hooks, tests, dev tools
+└── package.json
 ```
 
-Everything on the renderer side is **plain ES modules — no bundler, no
-framework**. `app/js/main.js` is the entry point loaded by `index.html`.
+## Technology
 
-## 6. Where files are stored
+- [Electron](https://www.electronjs.org/) — desktop shell
+- Vanilla HTML / CSS / JS — no frontend framework, small footprint
+- [electron-builder](https://www.electronjs.org/docs/latest/tutorial/electron-builder) + NSIS — installer
 
-By default, everything lives under Electron's per-OS `userData` directory
-(`%APPDATA%/Vertal Launcher` on Windows, `~/Library/Application
-Support/Vertal Launcher` on macOS, `~/.config/Vertal Launcher` on
-Linux). During the first-run wizard you can point the **data folder**
-(versions/libraries/assets/instances — the big stuff) at a different drive;
-your settings/accounts/instances list always stays in the fixed OS location
-so the app can find itself no matter what.
+## Support the Project 💙
 
-## 7. Known limitations / honest scope notes
+Vertal Launcher is free, open source, and ad-free. If it saves you time or gigabytes of downloads, consider supporting its development:
 
-- **Forge/NeoForge support is best-effort.** It shells out to the official
-  installer jar rather than reimplementing Forge's install-processor
-  pipeline. This works for the vast majority of versions but installer CLI
-  flags have shifted slightly over Forge's lifetime (`--installClient` vs
-  `--install-client`) — the code tries both. If an install fails, the raw
-  installer log is surfaced in the error message.
-- **Two fully-translated languages**: English and Bahasa Indonesia. The
-  wizard only offers languages that are actually wired up end-to-end,
-  rather than listing options that don't do anything.
-- **Quick-play only works with offline-mode servers** (the same ones
-  SKLauncher's server list targets). Servers that enforce Mojang/Microsoft
-  session authentication will reject the offline profile — that's a
-  server-side choice, not something a launcher can bypass.
-- **No resource pack / shader pack manager yet** — drop them in the
-  instance's `resourcepacks`/`shaderpacks` folder manually for now (`Open
-  Folder` in Mods works for `mods/`; the same instance directory holds the
-  others).
-- **Linux arm64** has no Mojang-provided JRE — set a custom Java path in
-  Settings on that platform.
+- ⭐ **Star the repository** — it helps others discover the project
+- 💖 **Sponsor via GitHub** — use the **Sponsor** button on this repository's page ([profile setup](https://github.com/sponsors/thewoldaa))
+- 🐛 **Contribute** — report bugs, suggest features, or open a pull request. All contributions are welcome!
 
-## 8. Legal note
+Every bit of support (and every coffee ☕) keeps the project offline-first, private, and free for everyone.
 
-Vertal Launcher is an independent, unofficial tool — not produced or
-endorsed by Mojang Studios or Microsoft. "Minecraft" is a trademark of
-Mojang Synergies AB. The app only ever downloads publicly-served files from
-Mojang's/Fabric's/Forge's own official servers (the same ones the official
-launcher uses) and does not bypass any purchase requirement or copy
-protection. Use of Minecraft through this launcher is still subject to
-[Mojang's EULA](https://www.minecraft.net/en-us/eula) — see the in-app
-terms screen shown on first run.
+## License
+
+[MIT](LICENSE) © 2026 CraftKal
+
+---
+
+*Vertal Launcher is an independent project and is not affiliated with Mojang Studios or Microsoft. Minecraft is a trademark of Mojang Synergies AB.*
