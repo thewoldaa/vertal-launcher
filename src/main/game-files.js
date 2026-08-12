@@ -224,10 +224,13 @@ async function ensureGameFiles(versionJson, gameDir, onProgress) {
 
 /**
  * Materializes a LINKED installation — files already exist in the user's
- * own Minecraft folder (sourceDir). Nothing is downloaded; every classpath
- * jar, the client jar and the asset index are verified to exist, and the
- * legacy natives are extracted from the linked libraries into Vertal's
- * natives cache (the linked folder is only ever READ).
+ * own Minecraft folder (sourceDir). Nothing is re-downloaded except ONE
+ * exception: a missing client jar is fetched into the profile dir (matching
+ * the official launcher layout), which is exactly what the official
+ * launcher does too. Every other classpath jar and the asset index are
+ * verified to exist, and the legacy natives are extracted from the linked
+ * libraries into Vertal's natives cache (the linked folder is otherwise
+ * only ever READ).
  * @param {object} versionJson - fully-resolved (merged) version JSON
  * @param {string} sourceDir - install root (has versions/, libraries/, assets/)
  * @param {string} gameDir - instance's game directory (legacy asset mirroring)

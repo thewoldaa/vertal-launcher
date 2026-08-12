@@ -219,7 +219,13 @@ async function launchInstance(instanceId, { onProgress, onLog, onExit, server } 
   if (runningProcesses.has(instanceId)) {
     throw new Error('This installation is already running.');
   }
-  const instance = instances.getInstance(instanceId);
+  // Reserve the slot synchronously — the install/merge below is async, so two
+  // rapid Play clicks would otherwise both pass the guard and spawn two JVMs.
+  const guard = { starting: true, proc: null, startedAt: 0 };
+  runningProcesses.set(instanceId, guard);
+  let instance;
+  try {
+    instance = instances.getInstance(instanceId);
   if (!instance) throw new Error('Unknown installation.');
   const account = getActiveAccount();
   if (!account) throw new Error('No offline profile selected. Create one in Settings first.');
@@ -241,7 +247,8 @@ async function launchInstance(instanceId, { onProgress, onLog, onExit, server } 
   const fullArgs = [...jvmArgs, mainClass, ...gameArgs];
   const proc = spawn(javaExe, fullArgs, { cwd: gameDir, windowsHide: false });
   const startedAt = Date.now();
-  runningProcesses.set(instanceId, { proc, startedAt });
+  guard.proc = proc;
+  guard.startedAt = startedAt;
 
   instances.updateInstance(instanceId, { lastPlayedAt: startedAt });
   if (server && server.id) {
@@ -263,12 +270,17 @@ async function launchInstance(instanceId, { onProgress, onLog, onExit, server } 
   });
 
   return { pid: proc.pid, versionId: merged.id };
+  } catch (err) {
+    // Install/merge/spawn failed — release the reserved slot so a retry works.
+    if (runningProcesses.get(instanceId) === guard) runningProcesses.delete(instanceId);
+    throw err;
+  }
 }
 
 function killInstance(instanceId) {
   const entry = runningProcesses.get(instanceId);
   if (!entry) return false;
-  entry.proc.kill();
+  if (entry.proc) entry.proc.kill();
   return true;
 }
 

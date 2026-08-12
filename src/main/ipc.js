@@ -177,7 +177,12 @@ function registerIpc() {
     if (result.canceled) return null;
     return result.filePaths[0];
   });
-  ipcMain.handle('app:openPath', (e, target) => shell.openPath(target));
+  ipcMain.handle('app:openPath', (e, target) => {
+    // Only reveal paths that actually exist — never let the renderer pass
+    // arbitrary shell targets (control-panel applets, `file://` tricks, etc.).
+    if (typeof target !== 'string' || !target.trim() || !fs.existsSync(target)) return undefined;
+    return shell.openPath(target);
+  });
   ipcMain.handle('app:openExternal', (e, url) => {
     if (/^https?:\/\//i.test(String(url))) return shell.openExternal(url);
     return undefined;

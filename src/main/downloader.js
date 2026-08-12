@@ -72,23 +72,30 @@ async function downloadFile(url, destPath, { sha1, size, onBytes } = {}) {
   }
   fs.mkdirSync(path.dirname(destPath), { recursive: true });
   const tmpPath = destPath + '.part';
-  const res = await get(url);
-  await new Promise((resolve, reject) => {
-    const out = fs.createWriteStream(tmpPath);
-    res.on('data', (chunk) => {
-      if (onBytes) onBytes(chunk.length);
+  try {
+    const res = await get(url);
+    await new Promise((resolve, reject) => {
+      const out = fs.createWriteStream(tmpPath);
+      res.on('data', (chunk) => {
+        if (onBytes) onBytes(chunk.length);
+      });
+      res.pipe(out);
+      out.on('finish', resolve);
+      out.on('error', reject);
+      res.on('error', reject);
     });
-    res.pipe(out);
-    out.on('finish', resolve);
-    out.on('error', reject);
-    res.on('error', reject);
-  });
-  fs.renameSync(tmpPath, destPath);
-  if (sha1) {
-    const actual = await sha1File(destPath);
-    if (actual.toLowerCase() !== sha1.toLowerCase()) {
-      throw new Error(`Checksum mismatch for ${path.basename(destPath)} (expected ${sha1}, got ${actual})`);
+    if (sha1) {
+      // Verify against the temp file BEFORE it replaces the destination,
+      // so a bad download can never clobber a previously valid file.
+      const actual = await sha1File(tmpPath);
+      if (actual.toLowerCase() !== sha1.toLowerCase()) {
+        throw new Error(`Checksum mismatch for ${path.basename(destPath)} (expected ${sha1}, got ${actual})`);
+      }
     }
+    fs.renameSync(tmpPath, destPath);
+  } catch (err) {
+    fs.rmSync(tmpPath, { force: true }); // never leave orphaned .part files
+    throw err;
   }
   return { skipped: false };
 }

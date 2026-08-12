@@ -1,3 +1,5 @@
+import { escapeHtml } from './format.js';
+
 let root = null;
 
 function ensureRoot() {
@@ -11,7 +13,7 @@ export function toast(message, type = 'info', timeoutMs = 4200) {
   const el = document.createElement('div');
   el.className = `toast fade-in ${type}`;
   const icon = type === 'error' ? 'error' : type === 'success' ? 'check_circle' : 'info';
-  el.innerHTML = `<span class="material-symbols-outlined">${icon}</span><span>${message}</span>`;
+  el.innerHTML = `<span class="material-symbols-outlined">${icon}</span><span>${escapeHtml(message)}</span>`;
   r.appendChild(el);
   setTimeout(() => {
     el.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
