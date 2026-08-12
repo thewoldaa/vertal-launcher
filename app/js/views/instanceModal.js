@@ -10,11 +10,38 @@ let editingInstance = null; // instance object when editing, null when creating
 
 function el(id) { return document.getElementById(id); }
 
-async function ensureManifest() {
-  if (state.mojangManifest) return state.mojangManifest;
-  const manifest = await window.api.mojang.listVersions();
+async function ensureManifest(force = false) {
+  if (state.mojangManifest && !force) return state.mojangManifest;
+  const manifest = await window.api.mojang.listVersions(force);
   setState({ mojangManifest: manifest });
   return manifest;
+}
+
+function setManifestNote(manifest) {
+  const note = el('modal-manifest-note');
+  if (!note) return;
+  if (manifest && manifest.offline) {
+    note.innerHTML = '<span class="material-symbols-outlined" style="font-size:12px;vertical-align:-2px">cloud_off</span> Using the built-in version list (offline). <a href="#" id="modal-manifest-retry">Retry</a>';
+    note.classList.remove('hidden');
+    el('modal-manifest-retry')?.addEventListener('click', onManifestRetry);
+  } else {
+    note.classList.add('hidden');
+  }
+}
+
+async function onManifestRetry(e) {
+  e.preventDefault();
+  const note = el('modal-manifest-note');
+  if (note) note.innerHTML = 'Retrying…';
+  try {
+    const manifest = await ensureManifest(true);
+    populateVersionSelect();
+    setManifestNote(manifest);
+    if (!editingInstance) { suggestName(); populateLoaderVersionSelect(); }
+    if (!manifest.offline) toast('Version list refreshed from Mojang.', 'success');
+  } catch (err) {
+    if (note) note.innerHTML = `Still offline: ${escapeHtml(err.message)}`;
+  }
 }
 
 function populateVersionSelect() {
@@ -137,8 +164,9 @@ export function openInstanceModal(onCreated, instance = null) {
 
   el('instance-modal-overlay').classList.remove('hidden');
 
-  ensureManifest().then(() => {
+  ensureManifest().then((manifest) => {
     populateVersionSelect();
+    setManifestNote(manifest);
     if (instance) {
       el('modal-mc-version').value = instance.mcVersion;
       el('modal-loader-version-wrap').classList.add('hidden');

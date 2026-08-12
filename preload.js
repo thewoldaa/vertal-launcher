@@ -41,7 +41,7 @@ contextBridge.exposeInMainWorld('api', {
   },
 
   mojang: {
-    listVersions: () => ipcRenderer.invoke('mojang:listVersions'),
+    listVersions: (force) => ipcRenderer.invoke('mojang:listVersions', { force }),
   },
   loader: {
     listFabricQuilt: (flavor, mcVersion) => ipcRenderer.invoke('loader:listFabricQuilt', { flavor, mcVersion }),

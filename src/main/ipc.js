@@ -62,8 +62,8 @@ function registerIpc() {
   ipcMain.handle('instances:isRunning', (e, id) => launcher.isRunning(id));
 
   // ---- Mojang / loader metadata ----
-  ipcMain.handle('mojang:listVersions', async () => {
-    const manifest = await mojangApi.getVersionManifest();
+  ipcMain.handle('mojang:listVersions', async (e, { force } = {}) => {
+    const manifest = await mojangApi.getVersionManifest(!!force);
     return manifest;
   });
   ipcMain.handle('loader:listFabricQuilt', async (e, { flavor, mcVersion }) => {
