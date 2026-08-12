@@ -20,6 +20,13 @@ Var VertalDataDirCtrl
 Var VertalUsername
 Var VertalUsernameCtrl
 
+!macro customInit
+  ; Defaults first: even if the page cannot render (nsDialogs Abort), the
+  ; values below are captured and setup.ini is still written with them.
+  StrCpy $VertalDataDir "$APPDATA\Vertal Launcher\data"
+  StrCpy $VertalUsername ""
+!macroend
+
 !macro customPageAfterChangeDir
   Page custom fnVertalSetupCreate fnVertalSetupLeave
 !macroend
