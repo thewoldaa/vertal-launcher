@@ -4,7 +4,8 @@
   "version": "1.0.0",
   "description": "Offline-first Minecraft launcher - vanilla, Fabric, Quilt, Forge & NeoForge, no Microsoft account required, no ads, fully client-side.",
   "author": "CraftKal",
-  "license": "GPL-3.0",
+    "contributors": ["CraftKal", "thewoldaa"],
+    "license": "GPL-3.0",
   "main": "main.js",
   "private": true,
   "scripts": {

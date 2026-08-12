@@ -139,6 +139,13 @@ Vertal Launcher is free, open source, and ad-free. If it saves you time or gigab
 
 Every bit of support (and every coffee ☕) keeps the project offline-first, private, and free for everyone.
 
+## Contributors
+
+- **CraftKal** — creator & maintainer · [github.com/craftkal](https://github.com/craftkal)
+- **thewoldaa** — maintainer · [github.com/thewoldaa](https://github.com/thewoldaa)
+
+Contributions are welcome — open an [issue](https://github.com/thewoldaa/vertal-launcher/issues) or a pull request!
+
 ## License
 
 [GNU General Public License v3.0](LICENSE) © 2026 CraftKal
