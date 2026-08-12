@@ -4,10 +4,10 @@
 #screen-wizard {
   position: fixed; inset: 0; z-index: 500;
   display: flex; align-items: center; justify-content: center;
-  padding: 30px;
+  padding: clamp(14px, 3vh, 30px);
 }
 #screen-wizard .wizard-shell {
-  width: 100%; max-width: 980px; height: 640px; max-height: 88vh;
+  width: 100%; max-width: 980px; height: min(640px, calc(100vh - 28px));
   border-radius: var(--radius-lg);
   display: flex; overflow: hidden;
   box-shadow: 0 30px 80px rgba(0,0,0,0.5);
@@ -39,6 +39,7 @@
 .wizard-content h2 { font-size: 30px; margin-bottom: 10px; color: var(--primary); }
 .wizard-content > .wz-sub { color: var(--on-surface-variant); max-width: 560px; margin-bottom: 28px; }
 .wizard-footer {
+  flex-shrink: 0;
   padding: 18px 32px; border-top: 1px solid rgba(132,150,126,0.14);
   display: flex; justify-content: space-between; align-items: center;
   background: rgba(14,14,16,0.5);
@@ -281,22 +282,40 @@
 .install-overlay {
   position: fixed; inset: 0; z-index: 400;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  padding: 30px; text-align: center;
+  padding: clamp(16px, 4vh, 30px); text-align: center;
+  overflow-y: auto;
 }
 .install-overlay .io-icon {
   width: 84px; height: 84px; border-radius: var(--radius-lg);
   background: var(--surface-container); border: 1px solid rgba(132,150,126,0.2);
   display: flex; align-items: center; justify-content: center;
   margin-bottom: 24px; box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+  flex-shrink: 0;
 }
 .install-overlay .io-icon .material-symbols-outlined { font-size: 38px; color: var(--primary-fixed-dim); }
 .install-overlay h1 { font-size: 24px; margin-bottom: 20px; }
 .install-overlay .io-pct { font-family: var(--font-display); font-size: 44px; color: var(--primary-fixed-dim); margin-bottom: 14px; }
-.install-overlay .io-track { width: 420px; max-width: 90vw; }
-.install-overlay .io-meta { display: flex; justify-content: space-between; width: 420px; max-width: 90vw; margin-top: 10px; font-family: var(--font-mono); font-size: 11.5px; color: var(--on-surface-variant); }
-.install-overlay .io-file { margin-top: 22px; font-family: var(--font-mono); font-size: 12px; color: var(--on-surface-variant); max-width: 90vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.install-overlay .io-track { width: min(420px, 84vw); }
+.install-overlay .io-meta { display: flex; justify-content: space-between; width: min(420px, 84vw); margin-top: 10px; font-family: var(--font-mono); font-size: 11.5px; color: var(--on-surface-variant); }
+.install-overlay .io-file { margin-top: 22px; font-family: var(--font-mono); font-size: 12px; color: var(--on-surface-variant); max-width: min(560px, 84vw); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .install-overlay .io-cancel { margin-top: 28px; }
 .install-overlay .io-error { color: var(--error); margin-top: 18px; max-width: 480px; font-size: 13px; white-space: pre-wrap; }
+
+/* Compact wizard/install layout for short windows */
+@media (max-height: 700px) {
+  #screen-wizard { padding: 10px; }
+  #screen-wizard .wizard-shell { height: calc(100vh - 20px); }
+  .wizard-content { padding: 22px 28px; }
+  .wizard-content h2 { font-size: 24px; }
+  .wizard-footer { padding: 14px 24px; }
+  .install-overlay { padding: 14px; }
+  .install-overlay .io-icon { width: 54px; height: 54px; margin-bottom: 12px; }
+  .install-overlay .io-icon .material-symbols-outlined { font-size: 26px; }
+  .install-overlay h1 { font-size: 19px; margin-bottom: 10px; }
+  .install-overlay .io-pct { font-size: 30px; margin-bottom: 8px; }
+  .install-overlay .io-file { margin-top: 12px; }
+  .install-overlay .io-cancel { margin-top: 14px; }
+}
 
 /* Toasts */
 #toast-root { position: fixed; bottom: 20px; right: 20px; z-index: 600; display: flex; flex-direction: column; gap: 10px; }

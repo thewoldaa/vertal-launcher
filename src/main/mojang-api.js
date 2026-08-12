@@ -6,9 +6,26 @@
  * reads to know what versions exist and where to download them from.
  */
 const { getJSON } = require('./downloader');
+const fs = require('fs');
+const path = require('path');
+const P = require('./paths');
 
 const VERSION_MANIFEST_URL = 'https://piston-meta.mojang.com/mc/game/version_manifest_v2.json';
 const JAVA_RUNTIME_ALL_URL = 'https://launchermeta.mojang.com/v1/products/java-runtime/2ec0cc96c44e5a76b9c8b7c39df7210883d12871/all.json';
+
+// Last-known-good manifest cached to disk: keeps the version list "auto-updated"
+// to the latest releases even when the network is down at launch. Fallback
+// order is network → disk cache → built-in list.
+function manifestCacheFile() { return path.join(P.root(), 'version-manifest.json'); }
+function readCachedManifest() {
+  try {
+    const m = JSON.parse(fs.readFileSync(manifestCacheFile(), 'utf8'));
+    return m && m.latest && Array.isArray(m.versions) ? m : null;
+  } catch { return null; }
+}
+function writeCachedManifest(m) {
+  try { fs.writeFileSync(manifestCacheFile(), JSON.stringify(m)); } catch {}
+}
 
 // Built-in fallback so the version picker is never empty when the network
 // (or Mojang's CDN) is unreachable. Only real, published version ids.
@@ -32,9 +49,12 @@ async function getVersionManifest(force = false) {
   if (_manifestCache && !force) return _manifestCache;
   try {
     _manifestCache = await getJSON(VERSION_MANIFEST_URL);
+    writeCachedManifest(_manifestCache);
     return _manifestCache;
   } catch (e) {
-    if (_manifestCache) return { ..._manifestCache, offline: true }; // stale-but-good
+    if (_manifestCache) return { ..._manifestCache, offline: true }; // this-session cache
+    const cached = readCachedManifest();
+    if (cached) return { ...cached, offline: true }; // last-known-good from disk
     return fallbackManifest();
   }
 }

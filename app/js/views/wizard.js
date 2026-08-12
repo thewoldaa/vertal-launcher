@@ -1,4 +1,4 @@
-import { state, setState } from '../state.js';
+import { setState } from '../state.js';
 import { toast } from '../toast.js';
 import { formatBytes, initials, escapeHtml } from '../format.js';
 import { applyTheme } from './settings.js';
@@ -35,7 +35,7 @@ function showStep(i) {
 function canProceedFrom(stepId) {
   if (stepId === 'language') return true;
   if (stepId === 'license') return agreed;
-  if (stepId === 'profile') return state.accounts.length > 0;
+  if (stepId === 'profile') return true; // profiles are optional — add them any time from Settings
   if (stepId === 'path') return !!chosenDataPath;
   return true;
 }
@@ -44,7 +44,6 @@ function next() {
   const stepId = STEPS[stepIndex];
   if (!canProceedFrom(stepId)) {
     if (stepId === 'license') toast('Please accept the terms to continue.', 'error');
-    if (stepId === 'profile') toast('Create at least one offline profile to continue.', 'error');
     if (stepId === 'path') toast('Choose where Vertal should store game files.', 'error');
     return;
   }
