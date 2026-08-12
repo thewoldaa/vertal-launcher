@@ -7,9 +7,10 @@
 const http = require('http');
 
 const expr = process.argv[2];
-if (!expr) { console.error('usage: node scripts/cdp-eval.js <expression>'); process.exit(1); }
+const port = process.argv[3] || '9333';
+if (!expr) { console.error('usage: node scripts/cdp-eval.js <expression> [port]'); process.exit(1); }
 
-http.get('http://127.0.0.1:9333/json', (res) => {
+http.get(`http://127.0.0.1:${port}/json`, (res) => {
   let d = '';
   res.on('data', (c) => (d += c));
   res.on('end', () => {
