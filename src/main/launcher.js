@@ -172,7 +172,7 @@ function buildLaunchCommand({ instance, merged, materialized, gameDir, account, 
   const rawGame = resolveArgTokens(merged.arguments.game, featureFlags);
 
   const hasClasspathFlag = rawJvm.some((a) => a.includes('${classpath}'));
-  const baselineJvm = [`-Xmx${ramMB}m`, `-Xms${Math.min(ramMB, 1024)}m`];
+  const baselineJvm = [`-Xmx${ramMB}m`, `-Xms${Math.min(ramMB, 2048)}m`];
   const extra = (extraJvmArgs || '').split(/\s+/).filter(Boolean);
   const jvmTokens = hasClasspathFlag
     ? [...baselineJvm, ...extra, ...rawJvm]

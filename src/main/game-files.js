@@ -236,18 +236,26 @@ async function ensureGameFiles(versionJson, gameDir, onProgress) {
 async function ensureLinkedGameFiles(versionJson, sourceDir, gameDir, onProgress) {
   const versionId = versionJson.id;
 
-  // Client jar: the resolved chain carries the BASE version's downloads
-  // (e.g. "26.1.2/26.1.2.jar"), which is where the jar lives in the
-  // official layout even when launching through a loader profile. Newer
-  // Mojang JSONs omit `path`, so fall back to versions/<baseId>/<baseId>.jar.
+  // Client jar: as stored by the official launcher & SKLauncher, loader
+  // profiles keep the vanilla client jar under
+  // versions/<profile-id>/<profile-id>.jar (NOT under the base version
+  // dir) — e.g. fabric-loader-0.19.3-26.1.2/fabric-loader-0.19.3-26.1.2.jar
+  // is the full 38 MB Mojang client jar. Vanilla versions collapse to the
+  // same path (versionId == baseId). Explicit clientDl.path (old-format
+  // JSON) wins when present.
   let clientJarPath = null;
   const clientDl = versionJson.downloads && versionJson.downloads.client;
   const baseId = versionJson.baseId || versionId;
   if (clientDl && clientDl.path) {
     clientJarPath = path.join(sourceDir, 'versions', clientDl.path);
   } else {
-    clientJarPath = path.join(sourceDir, 'versions', baseId, `${baseId}.jar`);
+    const profileJar = path.join(sourceDir, 'versions', versionId, `${versionId}.jar`);
+    const baseJar = path.join(sourceDir, 'versions', baseId, `${baseId}.jar`);
+    clientJarPath = fs.existsSync(profileJar) ? profileJar : baseJar;
   }
+  // Where a missing client jar gets downloaded: always the profile dir,
+  // matching the official layout so the next launch finds it instantly.
+  const clientJarTarget = path.join(sourceDir, 'versions', versionId, `${versionId}.jar`);
 
   const libsDir = path.join(sourceDir, 'libraries');
   const { classpathTasks, nativeTasks } = planLibraries(versionJson, { librariesDir: libsDir });
@@ -273,12 +281,13 @@ async function ensureLinkedGameFiles(versionJson, sourceDir, gameDir, onProgress
   if (clientMissing && clientFetchable) {
     onProgress && onProgress({ phase: 'Downloading missing client jar', pct: 10, indeterminate: true });
     try {
-      fs.mkdirSync(path.dirname(clientJarPath), { recursive: true });
-      await downloadFile(clientDl.url, clientJarPath, { sha1: clientDl.sha1, size: clientDl.size });
+      fs.mkdirSync(path.dirname(clientJarTarget), { recursive: true });
+      await downloadFile(clientDl.url, clientJarTarget, { sha1: clientDl.sha1, size: clientDl.size });
+      clientJarPath = clientJarTarget;
       onProgress && onProgress({ phase: 'Verifying linked installation', pct: 20, indeterminate: true });
     } catch (e) {
       throw new Error(
-        `The linked folder is missing the client jar (${path.basename(clientJarPath)}) and downloading it failed: ${e.message}`
+        `The linked folder is missing the client jar (${path.basename(clientJarTarget)}) and downloading it failed: ${e.message}`
       );
     }
   }

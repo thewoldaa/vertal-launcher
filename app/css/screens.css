@@ -278,7 +278,7 @@
   padding: 24px;
 }
 .modal-card {
-  width: 100%; max-width: 560px; max-height: 86vh;
+  width: 100%; max-width: 620px; max-height: 90vh;
   border-radius: var(--radius-lg); overflow: hidden;
   background: var(--surface-container-low);
   border: 1px solid rgba(132,150,126,0.18);

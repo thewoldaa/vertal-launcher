@@ -171,12 +171,18 @@ function setupRamSlider() {
   slider.max = maxMB;
   slider.step = 256;
   el('modal-ram-max-label').textContent = `${Math.round(maxMB / 1024)} GB`;
+  // Global RAM from Settings, for the readout when the slider is at 0.
+  let globalRam = 4096;
+  window.api.config.get().then((cfg) => { globalRam = (cfg && cfg.ramMB) || 4096; slider._update && slider._update(); }).catch(() => {});
   const update = () => {
     const v = parseInt(slider.value, 10);
-    el('modal-ram-readout').textContent = v > 0 ? `${Math.round(v / 1024 * 10) / 10} GB` : 'Global (from Settings)';
+    const eff = v > 0 ? v : globalRam;
+    el('modal-ram-readout').textContent = v > 0
+      ? `${Math.round(v / 1024 * 10) / 10} GB`
+      : `Global (${Math.round(globalRam / 1024 * 10) / 10} GB from Settings)`;
     const warn = el('modal-ram-warn');
-    warn.classList.toggle('hidden', v === 0 || v >= 2048);
-    warn.textContent = v > 0 && v < 2048
+    warn.classList.toggle('hidden', eff >= 2048);
+    warn.textContent = eff < 2048
       ? 'Below 2 GB loading will be very slow — 2 GB or more is recommended.'
       : '';
   };

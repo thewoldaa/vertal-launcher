@@ -107,6 +107,37 @@ function verifyJavaExecutable(exePath) {
   });
 }
 
+/** Parse the major Java version from `java -version` output ("1.8.0_301" -> 8, "25.0.3" -> 25). */
+function javaMajor(exePath) {
+  return new Promise((resolve) => {
+    execFile(exePath, ['-version'], { timeout: 8000 }, (err, stdout, stderr) => {
+      if (err) return resolve(0);
+      const m = /version\s+"?(?:1\.)?(\d+)/.exec((stderr || stdout) || '');
+      resolve(m ? parseInt(m[1], 10) : 1);
+    });
+  });
+}
+
+/** Locate a Java on the system: JAVA_HOME first, then the PATH (`where java`). */
+function findSystemJava() {
+  return new Promise((resolve) => {
+    const isWin = process.platform === 'win32';
+    const exeName = isWin ? 'java.exe' : 'java';
+    if (process.env.JAVA_HOME) {
+      const jh = path.join(process.env.JAVA_HOME, 'bin', exeName);
+      if (fs.existsSync(jh)) return resolve(jh);
+    }
+    execFile(isWin ? 'where' : 'which', ['java'], { timeout: 5000 }, (err, stdout) => {
+      if (err || !stdout) return resolve(null);
+      const first = stdout.split(/\r?\n/).map((s) => s.trim()).find(Boolean);
+      if (!first) return resolve(null);
+      // `where` prints "INFO: Could not find files..." when absent.
+      if (isWin && !/\.exe$/i.test(first)) return resolve(null);
+      resolve(first);
+    });
+  });
+}
+
 /**
  * @param {object} versionJson - the merged Mojang version JSON for the instance
  * @param {string|null} customJavaPath - config.javaPath override, if any
@@ -124,7 +155,21 @@ async function resolveJava(versionJson, customJavaPath, onProgress) {
   const cached = javaExeInRuntimeDir(component);
   if (cached) return cached;
 
+  // Offline-friendly fallback: a Java already on this machine (JAVA_HOME or
+  // PATH) that satisfies the version's minimum. Mojang's java-runtime
+  // manifest is frequently unreachable, and the user's own Java (often a
+  // current OpenJDK) is a perfectly good launch JVM.
+  const need = versionJson.javaVersion && versionJson.javaVersion.majorVersion;
+  const sysJava = await findSystemJava();
+  if (sysJava && (await verifyJavaExecutable(sysJava))) {
+    const have = await javaMajor(sysJava);
+    if (!need || have >= need) {
+      return sysJava;
+    }
+    // Wrong major: fall through to the Mojang download (or clear error).
+  }
+
   return downloadRuntime(component, onProgress);
 }
 
-module.exports = { resolveJava, platformKey, componentForVersion, verifyJavaExecutable };
+module.exports = { resolveJava, platformKey, componentForVersion, verifyJavaExecutable, findSystemJava, javaMajor };
