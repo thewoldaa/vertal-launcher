@@ -3,7 +3,7 @@
 **An offline-first Minecraft launcher for Windows.** Link an existing Minecraft folder and play **immediately — no re-downloading, no Microsoft account, no ads, no telemetry**. Everything runs locally on your machine.
 
 ![Version](https://img.shields.io/badge/version-1.0.0-4f7cff)
-![License](https://img.shields.io/badge/license-MIT-green)
+![License](https://img.shields.io/badge/license-GPL--3.0-blue)
 ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-0078d6)
 ![Built with](https://img.shields.io/badge/built%20with-Electron-9cf)
 
@@ -141,7 +141,9 @@ Every bit of support (and every coffee ☕) keeps the project offline-first, pri
 
 ## License
 
-[MIT](LICENSE) © 2026 CraftKal
+[GNU General Public License v3.0](LICENSE) © 2026 CraftKal
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. It is distributed in the hope that it will be useful, but **without any warranty**; see the `LICENSE` file for the full text.
 
 ---
 
