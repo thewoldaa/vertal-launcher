@@ -37,6 +37,10 @@ async function fileMatches(filePath, expectedSha1, expectedSize) {
 
 function get(url, redirectsLeft = 6) {
   return new Promise((resolve, reject) => {
+    if (!url || typeof url !== 'string') {
+      reject(new Error('Missing download URL — the version manifest is offline. Connect to the internet and retry.'));
+      return;
+    }
     const lib = url.startsWith('https:') ? https : http;
     const req = lib.get(url, { headers: { 'User-Agent': 'Vertal-Launcher/1.0' } }, (res) => {
       if ([301, 302, 303, 307, 308].includes(res.statusCode) && res.headers.location && redirectsLeft > 0) {

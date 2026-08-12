@@ -137,7 +137,8 @@ function setInstallUI({ phase, pct, indeterminate, error, done }) {
   fill.classList.toggle('shimmer-bar', !!indeterminate && !done);
   el('wz-install-error').style.display = error ? 'block' : 'none';
   el('wz-install-error').textContent = error || '';
-  el('wz-enter-app-btn').classList.toggle('hidden', !done);
+  el('wz-enter-app-btn').classList.toggle('hidden', !(done || error));
+  el('wz-enter-app-btn').textContent = error ? 'Enter Vertal anyway' : 'Enter Vertal';
   el('wz-install-icon').querySelector('.material-symbols-outlined').textContent = error ? 'error' : done ? 'check_circle' : 'downloading';
 }
 

@@ -63,6 +63,9 @@ async function getVersionJson(versionId) {
   const manifest = await getVersionManifest();
   const entry = manifest.versions.find((v) => v.id === versionId);
   if (!entry) throw new Error(`Unknown Minecraft version: ${versionId}`);
+  if (!entry.url) {
+    throw new Error(`Cannot install ${versionId}: the version manifest is offline. Connect to the internet and retry.`);
+  }
   return getJSON(entry.url);
 }
 
