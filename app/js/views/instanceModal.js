@@ -105,7 +105,7 @@ function populateVersionSelect() {
   const manifest = state.mojangManifest;
   const select = el('modal-mc-version');
   const list = manifest.versions.filter((v) => (showSnapshots ? true : v.type === 'release'));
-  select.innerHTML = list.map((v) => `<option value="${v.id}" data-type="${v.type}">${v.id}${v.id === manifest.latest.release ? '  (latest release)' : ''}</option>`).join('');
+  select.innerHTML = list.map((v) => `<option value="${escapeHtml(v.id)}" data-type="${escapeHtml(v.type)}">${escapeHtml(v.id)}${v.id === manifest.latest.release ? '  (latest release)' : ''}</option>`).join('');
 }
 
 async function populateLoaderVersionSelect() {
@@ -127,7 +127,7 @@ async function populateLoaderVersionSelect() {
         select.innerHTML = `<option value="latest">No builds available</option>`;
       } else {
         select.innerHTML = [`<option value="latest">Latest stable (recommended)</option>`]
-          .concat(list.slice(0, 40).map((e) => `<option value="${e.loader.version}">${e.loader.version}${e.loader.stable ? '' : ' (unstable)'}</option>`))
+          .concat(list.slice(0, 40).map((e) => `<option value="${escapeHtml(e.loader.version)}">${escapeHtml(e.loader.version)}${e.loader.stable ? '' : ' (unstable)'}</option>`))
           .join('');
       }
     } else {
@@ -135,8 +135,8 @@ async function populateLoaderVersionSelect() {
       if (!info.versions.length) {
         select.innerHTML = `<option value="latest">No builds available</option>`;
       } else {
-        select.innerHTML = [`<option value="latest">Recommended (${info.recommended || info.versions[0]})</option>`]
-          .concat(info.versions.slice(0, 40).map((v) => `<option value="${v}">${v}</option>`))
+        select.innerHTML = [`<option value="latest">Recommended (${escapeHtml(info.recommended || info.versions[0])})</option>`]
+          .concat(info.versions.slice(0, 40).map((v) => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`))
           .join('');
       }
     }

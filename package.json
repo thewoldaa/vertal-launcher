@@ -1,7 +1,7 @@
 {
   "name": "vertal-launcher",
   "productName": "Vertal Launcher",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Offline Minecraft launcher - vanilla, Fabric, Quilt, Forge & NeoForge, no Microsoft account required, no ads, fully client-side.",
   "author": "CraftKal",
     "contributors": ["CraftKal", "thewoldaa"],

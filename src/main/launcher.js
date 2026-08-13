@@ -241,14 +241,26 @@ async function launchInstance(instanceId, { onProgress, onLog, onExit, server } 
     server: server || null,
     resolution: cfg.resolution,
   });
+  if (!mainClass) {
+    throw new Error('This version has no main class — its JSON may be corrupt.');
+  }
 
   fs.mkdirSync(gameDir, { recursive: true });
 
   const fullArgs = [...jvmArgs, mainClass, ...gameArgs];
-  const proc = spawn(javaExe, fullArgs, { cwd: gameDir, windowsHide: false });
-  const startedAt = Date.now();
-  guard.proc = proc;
-  guard.startedAt = startedAt;
+    const proc = spawn(javaExe, fullArgs, {
+      cwd: gameDir,
+      windowsHide: false,
+      // Start the game in its own process group and detach it from the
+      // launcher's lifecycle: closing/quitting the launcher must NOT kill a
+      // running game. unref() lets the launcher exit cleanly while the game
+      // keeps running (stdio is piped, so no extra console window appears).
+      detached: true,
+    });
+    proc.unref();
+    const startedAt = Date.now();
+    guard.proc = proc;
+    guard.startedAt = startedAt;
 
   instances.updateInstance(instanceId, { lastPlayedAt: startedAt });
   if (server && server.id) {

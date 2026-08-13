@@ -25,6 +25,11 @@ function createInstance(data) {
   const name = (data.name || '').trim();
   if (!name) throw new Error('Installation name is required.');
   if (!data.mcVersion) throw new Error('A Minecraft version is required.');
+  // Version ids become directory names under dataRoot — keep them tame so a
+  // crafted id can never escape the versions/ tree via path traversal.
+  if (!/^[A-Za-z0-9][A-Za-z0-9_.-]*$/.test(data.mcVersion)) {
+    throw new Error(`Invalid Minecraft version id: ${data.mcVersion}`);
+  }
   const loader = data.loader || 'vanilla';
   if (!['vanilla', 'fabric', 'quilt', 'forge', 'neoforge'].includes(loader)) {
     throw new Error(`Unknown loader: ${loader}`);
@@ -55,11 +60,27 @@ function createInstance(data) {
   return instance;
 }
 
+// Whitelist of fields the renderer may patch — excludes id/createdAt so a
+// crafted patch can never forge duplicate ids.
+const UPDATEABLE_KEYS = new Set([
+  'name', 'mcVersion', 'versionType', 'loader', 'loaderVersion', 'resolvedVersionId',
+  'sourceDir', 'separateFolder', 'customGameDir', 'installed',
+  'ramMBOverride', 'jvmArgsOverride', 'lastPlayedAt', 'totalPlaytimeMs',
+]);
+
 function updateInstance(id, patch) {
+  const safe = {};
+  for (const k of Object.keys(patch || {})) {
+    if (!UPDATEABLE_KEYS.has(k)) continue;
+    if (k === 'mcVersion' && patch[k] && !/^[A-Za-z0-9][A-Za-z0-9_.-]*$/.test(patch[k])) {
+      throw new Error(`Invalid Minecraft version id: ${patch[k]}`);
+    }
+    safe[k] = patch[k];
+  }
   let updated = null;
   instancesStore.update((cur) => cur.map((i) => {
     if (i.id !== id) return i;
-    updated = { ...i, ...patch };
+    updated = { ...i, ...safe };
     return updated;
   }));
   if (!updated) throw new Error('Unknown installation id.');

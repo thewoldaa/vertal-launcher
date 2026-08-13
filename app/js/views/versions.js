@@ -41,7 +41,7 @@ function cardHtml(instance) {
     <div class="version-card fade-in" data-id="${instance.id}">
       <div class="vc-body">
         <div class="vc-top">
-          <span class="badge ${badge}">${loaderTxt}</span>
+          <span class="badge ${badge}">${escapeHtml(loaderTxt)}</span>
         </div>
         <h3>${escapeHtml(instance.name)}</h3>
         <p class="vc-sub">${escapeHtml(instance.mcVersion)} · ${instance.installed ? `Played ${formatRelativeTime(instance.lastPlayedAt)}` : 'Not installed'}</p>
@@ -93,6 +93,9 @@ function wireCardEvents() {
   document.querySelectorAll('.vc-install').forEach((btn) => {
     btn.addEventListener('click', async () => {
       const id = btn.dataset.id;
+      if (btn.dataset.busy === '1') return; // re-entry guard — one install at a time
+      btn.dataset.busy = '1';
+      btn.disabled = true;
       const instance = state.instances.find((i) => i.id === id);
       try {
         await window.api.install.start(id).then(({ requestId }) => new Promise((resolve, reject) => {
@@ -106,6 +109,9 @@ function wireCardEvents() {
         toast(`"${instance?.name || 'Installation'}" is ready to play.`, 'success');
       } catch (e) {
         toast(`Install failed: ${e.message}`, 'error');
+      } finally {
+        btn.dataset.busy = '';
+        btn.disabled = false;
       }
       refresh();
     });

@@ -79,7 +79,11 @@ FunctionEnd
 !endif ; !ifndef BUILD_UNINSTALLER
 
 !macro customInstall
-  ; Persist the choices for the app to import on first launch.
+  ; Persist the choices for the app to import on first launch. On
+  ; reinstall/upgrade an existing setup.ini must NOT be overwritten —
+  ; otherwise the user's data-root/profile choices would reset (the app
+  ; side also refuses to override an existing customDataRoot).
+  IfFileExists "$APPDATA\Vertal Launcher\setup.ini" +5
   CreateDirectory "$APPDATA\Vertal Launcher"
   FileOpen $0 "$APPDATA\Vertal Launcher\setup.ini" w
   FileWrite $0 "dataRoot=$VertalDataDir$\r$\n"

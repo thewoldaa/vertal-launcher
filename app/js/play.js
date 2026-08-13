@@ -21,13 +21,18 @@ export async function playInstance(instanceId, onStateChange, opts) {
     setState({ runningInstanceId: instanceId });
 
     await new Promise((resolve, reject) => {
-      const off = window.api.launch.onEvent((evt) => {
+      let off;
+      // If the launch stream never settles (hung install/launch), don't leave
+      // the Play button stuck on "Starting…" forever.
+      const t = setTimeout(() => { if (off) off(); reject(new Error('Launch timed out after 2 minutes.')); }, 120000);
+      off = window.api.launch.onEvent((evt) => {
         if (evt.requestId !== requestId) return;
         if (evt.type === 'progress') {
           onStateChange && onStateChange('installing', evt);
         } else if (evt.type === 'started') {
           onStateChange && onStateChange('running', evt);
         } else if (evt.type === 'exit') {
+          clearTimeout(t);
           setState({ runningInstanceId: null });
           onStateChange && onStateChange('idle');
           off();
@@ -36,6 +41,7 @@ export async function playInstance(instanceId, onStateChange, opts) {
           }
           resolve();
         } else if (evt.type === 'error') {
+          clearTimeout(t);
           setState({ runningInstanceId: null });
           onStateChange && onStateChange('error');
           off();

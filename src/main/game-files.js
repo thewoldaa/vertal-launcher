@@ -114,7 +114,11 @@ function extractNatives(nativeTasks, nativesDir) {
       if (entry.isDirectory) continue;
       const excluded = (task.exclude || []).some((pfx) => entry.entryName.startsWith(pfx));
       if (excluded) continue;
-      const outPath = path.join(nativesDir, entry.entryName);
+      // Zip-slip guard: a malicious/odd classifier jar must never write
+      // outside the natives cache via ../ or absolute entry names.
+      const name = entry.entryName.replace(/^[\\/]+/, '');
+      if (name.includes('..') || path.isAbsolute(name)) continue;
+      const outPath = path.join(nativesDir, name);
       fs.mkdirSync(path.dirname(outPath), { recursive: true });
       fs.writeFileSync(outPath, entry.getData());
     }

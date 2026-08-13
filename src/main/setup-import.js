@@ -28,7 +28,9 @@ function importSetupIni() {
 
   const patch = { firstRun: false };
   if (kv.language && /^[a-z]{2,3}$/.test(kv.language)) patch.language = kv.language;
-  if (kv.dataRoot && typeof kv.dataRoot === 'string' && kv.dataRoot.length > 0) {
+  // Only a true first run may set the data root — a reinstall/upgrade must
+  // keep the existing choice (the installer also stops overwriting setup.ini).
+  if (kv.dataRoot && path.isAbsolute(kv.dataRoot) && !getConfig().customDataRoot) {
     patch.customDataRoot = kv.dataRoot;
   }
   setConfig(patch);

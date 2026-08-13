@@ -34,8 +34,9 @@ module.exports = async function afterPack(context) {
     }
   }
   if (!rcedit) {
-    console.warn('[after-pack] rcedit-x64.exe not found in winCodeSign cache — icon embedding skipped');
-    return;
+    // Branding is a hard requirement for a released build — fail loudly
+    // instead of silently shipping a default-Electron-icon exe.
+    throw new Error('[after-pack] rcedit-x64.exe not found in winCodeSign cache — cannot embed icon/version');
   }
 
   const icon = path.join(packager.projectDir, 'build', 'icon.ico');

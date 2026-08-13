@@ -33,9 +33,15 @@ function createWindow() {
       preload: path.join(__dirname, '..', '..', 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: false,
+      sandbox: true, // preload only needs contextBridge/ipcRenderer
     },
   });
+
+  // Never allow the window to navigate away from the bundled UI (links,
+  // location=assignment) — a navigated page would inherit the privileged
+  // preload bridge.
+  mainWindow.webContents.on('will-navigate', (e) => e.preventDefault());
+  mainWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
 
   mainWindow.loadFile(path.join(__dirname, '..', '..', 'app', 'index.html'));
 
