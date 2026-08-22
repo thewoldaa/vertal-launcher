@@ -3,3 +3,5 @@ dist/
 release/
 smoke-shot.png
 *.log
+
+nul
