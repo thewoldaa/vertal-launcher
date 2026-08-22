@@ -13,7 +13,7 @@
 const fs = require('fs');
 const path = require('path');
 const paths = require('./paths');
-const { setConfig } = require('./config');
+const { getConfig, setConfig } = require('./config');
 const offlineAuth = require('./offline-auth');
 
 function importSetupIni() {
