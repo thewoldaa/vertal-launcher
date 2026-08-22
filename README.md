@@ -1,6 +1,6 @@
 # Vertal Launcher
 
-An offline-first Minecraft launcher for Windows. Link an existing Minecraft folder and play right away — no re-downloading, no Microsoft account, no ads, no telemetry. Everything runs locally on your machine.
+An offline-first Minecraft launcher for Windows. Link an existing Minecraft folder and play right away no re-downloading, no Microsoft account, no ads, no telemetry. Everything runs locally on your machine.
 
 ![License](https://img.shields.io/badge/license-GPL--3.0-blue)
 ![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-0078d6)
@@ -10,10 +10,10 @@ An offline-first Minecraft launcher for Windows. Link an existing Minecraft fold
 
 Most launchers force you to re-download gigabytes of game files or log in with a Microsoft account. Vertal Launcher takes the opposite approach:
 
-- **Link, don't download.** Point the launcher at an existing Minecraft installation folder (official launcher, SKLauncher, or any compatible layout) and it resolves everything locally — versions, libraries, assets, and the client jar. Zero downloads, even when Mojang's servers are down.
+- **Link, don't download.** Point the launcher at an existing Minecraft installation folder (official launcher, SKLauncher, or any compatible layout) and it resolves everything locally versions, libraries, assets, and the client jar. Zero downloads, even when Mojang's servers are down.
 - **Private by design.** Offline accounts (no Microsoft login), no ads, no analytics, no tracking. Your data never leaves your computer.
 - **Loader support.** Vanilla, Fabric and Quilt (500+ merged versions), plus Forge / NeoForge latest auto-detect.
-- **Clean custom UI.** Dark, minimal, borderless design with per-instance custom icons — including your own icon on the Windows taskbar and installer.
+- **Clean custom UI.** Dark, minimal, borderless design with per-instance custom icons including your own icon on the Windows taskbar and installer.
 
 ## Features
 
@@ -35,13 +35,13 @@ Most launchers force you to re-download gigabytes of game files or log in with a
 
 - Windows 10 / 11 (64-bit)
 - Java 17+ recommended. If Java is missing, the launcher falls back to a detected system JVM (`JAVA_HOME` → `PATH`) and only attempts a runtime download when nothing is available and Mojang's services are reachable.
-- An existing Minecraft installation (optional) — used by the link existing folder flow. Without one, use Download & install.
+- An existing Minecraft installation (optional) used by the link existing folder flow. Without one, use Download & install.
 
 ## Installation
 
 1. Download `Vertal Launcher Setup 1.0.2.exe` from the [Releases](https://github.com/thewoldaa/vertal-launcher/releases) page
 2. Run the installer (no administrator rights required)
-3. On the setup page you can optionally set your data folder and profile name — the launcher will prefill them for you
+3. On the setup page you can optionally set your data folder and profile name the launcher will prefill them for you
 4. Launch Vertal Launcher and create your first instance
 
 The installer is fully offline: it does not contact any server during installation.
@@ -64,7 +64,7 @@ The installer is fully offline: it does not contact any server during installati
 ### 3. Profiles & RAM
 
 - Create multiple offline profiles (no Microsoft account needed)
-- Set per-instance RAM or leave it on Global (managed in Settings — default 4 GB). The readout shows "Global (X GB from Settings)" so you always know what will be used
+- Set per-instance RAM or leave it on Global (managed in Settings default 4 GB). The readout shows "Global (X GB from Settings)" so you always know what will be used
 
 ## Building from Source
 
@@ -128,7 +128,7 @@ vertal-launcher/
 ## Technology
 
 - [Electron](https://www.electronjs.org/) — desktop shell
-- Vanilla HTML / CSS / JS — no frontend framework, small footprint
+- Vanilla HTML / CSS / JS no frontend framework, small footprint
 - [electron-builder](https://www.electronjs.org/docs/latest/tutorial/electron-builder) + NSIS — installer
 
 ## Supporting the Project
@@ -141,10 +141,10 @@ Vertal Launcher is free, open source, and ad-free. If it saves you time or bandw
 
 ## Contributors
 
-- CraftKal — creator & maintainer · [github.com/craftkal](https://github.com/craftkal)
-- thewoldaa — maintainer · [github.com/thewoldaa](https://github.com/thewoldaa)
+- CraftKal creator & maintainer · [github.com/craftkal](https://github.com/craftkal)
+- thewoldaa maintainer · [github.com/thewoldaa](https://github.com/thewoldaa)
 
-Contributions are welcome — open an [issue](https://github.com/thewoldaa/vertal-launcher/issues) or a pull request.
+Contributions are welcome open an [issue](https://github.com/thewoldaa/vertal-launcher/issues) or a pull request.
 
 ## License
 
